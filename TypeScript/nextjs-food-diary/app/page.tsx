@@ -373,7 +373,7 @@ function HomeContent() {
     const items = groupedData[mealType];
     return (
       <div style={{ marginBottom: "2rem" }}>
-        <Title level={2} style={{ marginBottom: "1rem", textTransform: "capitalize" }}>
+        <Title level={3} style={{ marginBottom: "1rem", textTransform: "capitalize" }}>
           {title}
         </Title>
         {items.length === 0 ? (
