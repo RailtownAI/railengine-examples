@@ -1,0 +1,31 @@
+{
+  "name": "railengine-nextjs-example",
+  "author": "Railtown AI",
+  "description": "A simple Next.js application with Railengine for a food diary",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "update": "npx npm-check-updates -u"
+  },
+  "dependencies": {
+    "@ant-design/nextjs-registry": "^1.3.0",
+    "@railtownai/railengine": "0.0.3",
+    "@railtownai/railengine-ingest": "0.0.3",
+    "antd": "^6.2.3",
+    "lucide-react": "^0.563.0",
+    "next": "^16.1.6",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "uuid": "^13.0.0",
+    "zod": "4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^25.2.1",
+    "@types/react": "^19.2.13",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^5.9.3"
+  }
+}
