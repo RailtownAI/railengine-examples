@@ -3,13 +3,14 @@
 ## Setup
 
 1. Sign up for a free account at [Railengine](https://railengine.ai)
-1. Install dependencies:
+2. Create a new Engine with the schema in `engine-schema.json`
+3. Install dependencies:
 
    ```bash
    npm install
    ```
 
-1. Copy `.env.example` to `.env` and fill in your Railengine credentials from your engine dashboard:
+4. Copy `.env.example` to `.env` and fill in your Railengine credentials from your engine dashboard:
 
    ```bash
    cp .env.example .env
@@ -20,7 +21,7 @@
    - `ENGINE_PAT` - Your Engine PAT for retrieval
    - `ENGINE_ID` - Your Engine ID
 
-1. Run the development server:
+5. Run the development server:
 
    ```bash
    npm run dev
