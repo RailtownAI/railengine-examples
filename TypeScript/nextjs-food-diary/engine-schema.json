@@ -1,0 +1,13 @@
+{
+  "id": "e0b93167-3014-47c5-98bc-7fce6c9d442e",
+  "name": "Chicken shawarma wrap",
+  "meal": "lunch",
+  "date": "2025-12-17T00:00:00-08:00",
+  "nutritional_info": {
+    "calories": 620,
+    "carbohydrates": 60,
+    "sugar": 7,
+    "fat": 26,
+    "protein": 38
+  }
+}
