@@ -1,6 +1,6 @@
 ## Railengine for IoT
 
-railengine_ingest.py can be used by python and Micropython programs to send data to a Railengine
+railengine_ingest.py can be used by python and MicroPython programs to send data to a Railengine
 
 ## Example
 
