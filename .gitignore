@@ -81,3 +81,9 @@ dmypy.json
 .cursor
 
 package-lock.json
+
+**/.vs/*
+**/packages/*
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
