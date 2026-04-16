@@ -87,3 +87,4 @@ package-lock.json
 [Oo]bj/
 [Dd]ebug/
 [Rr]elease/
+**/Secrets.cs
