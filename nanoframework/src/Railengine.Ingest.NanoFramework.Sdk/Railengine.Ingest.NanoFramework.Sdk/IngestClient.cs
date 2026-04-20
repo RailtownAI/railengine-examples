@@ -19,7 +19,7 @@ namespace Railengine.Ingest.NanoFramework.Sdk
             this.ingestApiUrl = ingestApiUrl;
 
             httpClient = new HttpClient();
-            httpClient.SslProtocols = System.Net.Security.SslProtocols.Tls12;
+            httpClient.SslProtocols = SslProtocols.Tls12;
             httpClient.DefaultRequestHeaders.Add(railAuthHeader, ingestApiKey);
 
             if (caCert != null)
@@ -29,7 +29,6 @@ namespace Railengine.Ingest.NanoFramework.Sdk
             }
             else
             {
-                // TODO: provide caCert in production
                 httpClient.SslVerification = SslVerification.NoVerification;
             }
         }
