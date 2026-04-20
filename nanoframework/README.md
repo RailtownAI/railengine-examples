@@ -18,17 +18,17 @@ This example was developed for ESP32. For other platforms, please review the doc
 ## Tested Hardware
 - ESP32-WROOM-32
   
-The sample should work with other ESP32 boards, but check the pin assigments.
+The sample should work with other ESP32 boards, but check the pin assigments and ADC channel.
 
 ## Network
-This SDK is network-agnostic. The examples use WiFi but the Ingest Client
+This SDK is network-agnostic. The example uses WiFi but the Ingest Client
 works with any network connection. 
 
 ## Setup
 
 ### Configuration
 
-Create a Secrets.cs file in the same directory as Program.cs with the following contents:
+Create a Secrets.cs file in the Examples\Esp32Thermistor directory with the following contents:
 ```
 namespace Esp32Thermistor
 {
@@ -42,15 +42,17 @@ namespace Esp32Thermistor
     }
 }
 ```
-Use the WiFi credentials for your network and obtain the ingest url and key from your [Railengine configuration](https://cndr.railtown.ai/)
+Set the WiFi credentials for your network and obtain the ingest url and key from your [Railengine configuration](https://cndr.railtown.ai/)
 > ⚠️ Do not commit Secrets.cs to version control. Add it to your .gitignore file.
 
-nanoFramework does not support a X509 certificate store, so the root CA certificate must be provided directly as a Base64-encoded ASCII string (PEM). `Secrets.CaRootCertificate` is used for this purpose and it can remain null for dev/test scenarios. Please see the SSL Validation section below to obtain the correct certificate. 
+The .NET nanoFramework does not support a X509 certificate store, so the root CA certificate must be provided directly as a Base64-encoded ASCII string (PEM). `Secrets.CaRootCertificate` is used for this purpose and it can remain null for dev/test scenarios. Please see the SSL Validation section below to obtain the correct certificate. 
 
 ### Components
 
-Connect a thermistor to pin 32
-- To create a voltage divider, add a 10kΩ resistor between the thermistor and pin 32.
+Connect a thermistor to ADC
+- Connect one leg of the thermistor to GPIO 32 (which maps to ADC1 Channel 4)
+- Connect the other leg to ground
+- Add a 10kΩ resistor between GPIO 32 and the 3.3V pin to complete the voltage divider
 
 LEDs:
 - Pin 13: Error indicator LED with grounded cathode (required if you want visual feedback)
