@@ -33,10 +33,31 @@ namespace Railengine.Ingest.NanoFramework.Sdk
             }
         }
 
+        /// <summary>
+        /// Sends data to a Railengine.
+        /// </summary>
+        /// <param name="data">
+        /// A Hashtable where keys are strings and values are primitive types (int, string, bool, etc.)
+        /// or arrays of primitives. Does not support nested objects or multi-dimensional arrays.
+        /// </param>
+        /// <returns>true for success, false for failure</returns>
         public bool Send(Hashtable payload)
         {
             var json = JsonBuilder.FromHashTable(payload);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            return Send(json);
+        }
+
+        /// <summary>
+        /// Sends data to a Railengine.
+        /// </summary>
+        /// <param name="jsonData">A JSON string representing a serialized object.</param>
+        /// <param name="encoding">The character encoding used, defaults to UTF8</param>
+        /// <returns>true for success, false for failure</returns>
+        public bool Send(string jsonData, Encoding encoding = null)
+        {
+            encoding ??= Encoding.UTF8;
+
+            var content = new StringContent(jsonData, encoding, "application/json");
             var response = httpClient.Post(ingestApiUrl, content);
             return response.IsSuccessStatusCode;
         }

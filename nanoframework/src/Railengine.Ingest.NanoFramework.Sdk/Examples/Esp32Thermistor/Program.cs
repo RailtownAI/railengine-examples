@@ -72,7 +72,7 @@ namespace Esp32Thermistor
                 var adc = new AdcController();
                 var thermistorChannel = adc.OpenChannel(thermistorAdcChannel);
 
-                X509Certificate caCert = null;
+                X509Certificate caCert = new(Secrets.CaRootCertificate);
                 var client = new IngestClient(ingestApiUrl, ingestApiKey, caCert);
 
                 while (true)
