@@ -105,11 +105,13 @@ namespace Esp32Thermistor
 
                     Thread.Sleep(300000);
                 }
-            } 
+            }
             catch (Exception ex)
             {
                 Debug.WriteLine("Failed: " + ex.ToString());
                 led2.Write(PinValue.High);
+                led.Write(PinValue.Low);
+                Thread.Sleep(2000);
                 return;
             }
         }
