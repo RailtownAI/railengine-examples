@@ -68,8 +68,8 @@ This example uses a specific JSON payload, but Railengine can accept any JSON do
 - For nested objects or multi-dimensional arrays, use the `Send(string jsonData)` overload, which accepts raw JSON.
 
 ## SSL Validation
-In a production context the current, root CA for the ingest server's certificate should be used.
-As of April 2026, the correct certificate is the Sectigo Public Server Authentication but if you encounter SSL validation errors, please obtain the current certificate. visit the ingest URL in a browser, view the site certificate and export the current *root* certificate.
+In a production context the current root CA for the ingest server's certificate should be used.
+As of April 2026, the correct certificate is the Sectigo Public Server Authentication certificate below. If you encounter SSL validation errors when using this, please obtain the current certificate. Visit the ingest URL in a browser, view the site certificate and export the current *root* certificate.
 ```text
 -----BEGIN CERTIFICATE-----
 MIIFijCCA3KgAwIBAgIQdY39i658BwD6qSWn4cetFDANBgkqhkiG9w0BAQwFADBf
