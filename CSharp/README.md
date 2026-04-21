@@ -2,4 +2,4 @@
 
 Coming soon!
 
-Quick start: https://www.nuget.org/packages/Railengine.Ingestion
+[Quick start](https://www.nuget.org/packages/Railengine.Ingestion)
