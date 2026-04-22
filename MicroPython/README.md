@@ -4,7 +4,7 @@ A **MicroPython** SDK that sends sensor data to the [Railengine](https://raileng
 
 ## What It Does
 
-Connects to WiFi, syncs the system clock, and POSTs JSON payloads to your Railengine ingest endpoint over TLS 1.2.
+Connects to Wi-Fi, syncs the system clock, and POSTs JSON payloads to your Railengine ingest endpoint over TLS 1.2.
 
 ## Supported Platforms
 
@@ -12,7 +12,7 @@ This example was developed for ESP32. For other platforms, please review the doc
 
 ## Requirements
 
-- A supported microcontroller board with WiFi (eg. ESP32-WROOM-32)
+- A supported microcontroller board with Wi-Fi (eg. ESP32-WROOM-32)
 - A Python IDE with MicroPython device support (eg. Thonny)
 
 ## Tested Hardware
@@ -21,8 +21,8 @@ This example was developed for ESP32. For other platforms, please review the doc
 The sample should work with other ESP32 boards, but check the pin assigments.
 
 ## Network
-This SDK is network-agnostic. The example uses WiFi but the Ingest Client
-works with any network connection. 
+This SDK is network-agnostic. The example uses Wi-Fi but the Ingest Client
+works with any network connection.
 
 ## Setup
 

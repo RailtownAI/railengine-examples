@@ -1,11 +1,11 @@
 import sys
 
 if sys.implementation.name == 'micropython':
-    import urequests as requests
-    import ujson as json
+    import urequests as requests  # type: ignore[import]
+    import ujson as json  # type: ignore[import]
 else:
-    import requests
-    import json
+    import requests  # type: ignore[no-redef]
+    import json  # type: ignore[no-redef]
 
 class RailengineIngest:
     def __init__(self, api_url, api_key):
