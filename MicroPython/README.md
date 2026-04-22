@@ -38,7 +38,7 @@ API_URL = ""
 API_KEY = ""
 ```
 Set the Wi-Fi credentials for your network and obtain the ingest URL and key from your [Railengine configuration](https://cndr.railtown.ai/)
-> ⚠️ Do not commit Secrets.cs to version control. Add it to your .gitignore file.
+> ⚠️ Do not commit secrets.py to version control. Add it to your .gitignore file.
 
 ### Components
 
@@ -51,10 +51,8 @@ LEDs:
 - Pin 13: Error indicator LED with grounded cathode (required if you want visual feedback)
 - Pin 2: This is the onboard LED for the ESP32-WROOM-32 and the sample uses it to indicate when the Ingest Client is active
 
-All of these pins can be changed at the top of Program.cs
+All of these pins can be changed at the top of main.py
 
 ## Payload Format
 
-This example uses a specific JSON payload, but Railengine can accept any JSON document. To adapt the example for your payload update the template used for `ingestor.send`
-
-
+This example uses a specific JSON payload, but Railengine can accept any JSON document. To adapt the example for your payload update the template used for `ingestor.send`.
