@@ -88,4 +88,4 @@ package-lock.json
 [Dd]ebug/
 [Rr]elease/
 **/Secrets.cs
-/MicroPython/secrets.py
+**/secrets.py
