@@ -1,16 +1,13 @@
 import sys
+import ujson as json
+import urequests as requests
 
-if sys.implementation.name == 'micropython':
-    import urequests as requests  # type: ignore[import]
-    import ujson as json  # type: ignore[import]
-else:
-    import requests  # type: ignore[no-redef]
-    import json  # type: ignore[no-redef]
 
 class RailengineIngest:
     def __init__(self, api_url, api_key):
         self.api_url = api_url
         self.api_key = api_key
+
 
     def send(self, payload):
         response = requests.post(
