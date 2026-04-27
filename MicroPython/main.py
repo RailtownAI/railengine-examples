@@ -16,9 +16,11 @@ BETA = 3950  # from thermistor datasheet
 R_NOMINAL = 10000  # resistance at 25°C
 T_NOMINAL = 25  # nominal temp (°C)
 R_SERIES = 10000  # series resistor value
-OFFSET = -2.0  # BETA and R_SERIES can be off so calibrate against a known temperature
+# BETA and R_SERIES can be off so calibrate against a known temperature
+OFFSET = -2.0
 
-# MicroPython epoch starts 2000-01-01; offset converts to Unix epoch (1970-01-01)
+# MicroPython epoch starts 2000-01-01
+# Offset converts to Unix epoch (1970-01-01)
 EPOCH_OFFSET = 946684800
 
 adc = ADC(Pin(THERMISTOR_PIN))

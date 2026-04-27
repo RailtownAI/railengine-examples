@@ -1,4 +1,3 @@
-import sys
 import ujson as json
 import urequests as requests
 
@@ -8,15 +7,11 @@ class RailengineIngest:
         self.api_url = api_url
         self.api_key = api_key
 
-
     def send(self, payload):
         response = requests.post(
             self.api_url,
-            headers={
-                "x-rail-auth": self.api_key,
-                "Content-Type": "application/json"
-            },
-            data=json.dumps(payload)
+            headers={"x-rail-auth": self.api_key, "Content-Type": "application/json"},
+            data=json.dumps(payload),
         )
 
         status = response.status_code
