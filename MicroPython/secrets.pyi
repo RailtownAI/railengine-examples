@@ -1,4 +1,0 @@
-API_URL: str
-API_KEY: str
-WIFI_SSID: str
-WIFI_PASSWORD: str

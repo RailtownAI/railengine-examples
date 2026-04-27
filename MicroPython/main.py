@@ -27,7 +27,10 @@ adc = ADC(Pin(THERMISTOR_PIN))
 busy_led = Pin(BUSY_LED_PIN, Pin.OUT)
 error_led = Pin(ERROR_LED_PIN, Pin.OUT)
 
-ingestor = RailengineIngest(secrets.API_URL, secrets.API_KEY)
+ingestor = RailengineIngest(
+    secrets.API_URL, # pylint: disable=no-member
+    secrets.API_KEY # pylint: disable=no-member
+)
 
 SENSOR_SKU = "ESP32-Therm-MiP"
 LOCATION_DESCRIPTION = "home"
@@ -84,7 +87,10 @@ def connect_wifi():
     wlan.active(True)
     sleep(0.5)
 
-    wlan.connect(secrets.WIFI_SSID, secrets.WIFI_PASSWORD)
+    wlan.connect(
+        secrets.WIFI_SSID, # pylint: disable=no-member
+        secrets.WIFI_PASSWORD # pylint: disable=no-member
+    )
 
     # Wait for connection (max 10 seconds)
     timeout = 10
