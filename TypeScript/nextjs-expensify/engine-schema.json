@@ -1,0 +1,15 @@
+{
+  "id": "8a4d12f7-2e8c-4b1a-9f3a-2c7e9d4b1a55",
+  "vendor": "Blue Bottle Coffee",
+  "amount": 18.45,
+  "currency": "USD",
+  "date": "2026-04-28T14:32:00-07:00",
+  "category": "food",
+  "lineItems": [
+    { "description": "Cappuccino", "price": 5.75 },
+    { "description": "Almond croissant", "price": 4.95 },
+    { "description": "Cold brew 12oz", "price": 5.25 }
+  ],
+  "tax": 1.5,
+  "tip": 1.0
+}
