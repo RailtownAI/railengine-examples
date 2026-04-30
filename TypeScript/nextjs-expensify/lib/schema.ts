@@ -32,7 +32,7 @@ export const ExpenseSchema = z.object({
 export type Expense = z.infer<typeof ExpenseSchema>;
 export type LineItem = z.infer<typeof LineItemSchema>;
 
-/** API search row: expense plus optional relative rank for index search (0–100 in this result set). */
+/** API search row: expense plus optional relative rank (0–100 vs. best hit in this result set). */
 export type ExpenseSearchResult = Expense & {
   relevancePercent?: number;
 };

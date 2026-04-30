@@ -30,6 +30,13 @@ import { cn, formatCurrency, formatDate } from "@/lib/utils";
 
 type SearchMode = "index" | "vector";
 
+const matchTooltip: Record<SearchMode, string> = {
+  index:
+    "Match strength vs. the top result in this list (index rank), not statistical accuracy.",
+  vector:
+    "Match strength vs. the top result in this list (vector similarity or distance), not statistical accuracy.",
+};
+
 export function HeaderSearch() {
   const [mode, setMode] = React.useState<SearchMode>("index");
   const [query, setQuery] = React.useState("");
@@ -184,11 +191,10 @@ export function HeaderSearch() {
                         {exp.vendor}
                       </span>
                       <div className="flex shrink-0 flex-col items-end gap-1">
-                        {mode === "index" &&
-                        exp.relevancePercent !== undefined ? (
+                        {exp.relevancePercent !== undefined ? (
                           <span
                             className="text-[0.65rem] font-medium tabular-nums leading-none text-emerald-700 dark:text-emerald-400"
-                            title="Match strength vs. the top result in this list (search rank), not statistical accuracy."
+                            title={matchTooltip[mode]}
                           >
                             {exp.relevancePercent}% match
                           </span>
@@ -234,9 +240,12 @@ export function HeaderSearch() {
                   <Badge variant="secondary" className="capitalize">
                     {selected.category}
                   </Badge>
-                  {mode === "index" &&
-                  selected.relevancePercent !== undefined ? (
-                    <Badge variant="outline" className="tabular-nums">
+                  {selected.relevancePercent !== undefined ? (
+                    <Badge
+                      variant="outline"
+                      className="tabular-nums"
+                      title={matchTooltip[mode]}
+                    >
                       {selected.relevancePercent}% match
                     </Badge>
                   ) : null}
