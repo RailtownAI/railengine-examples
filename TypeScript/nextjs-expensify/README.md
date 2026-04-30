@@ -59,6 +59,15 @@ fields end up in the document store. To change the model used for OCR, edit
 the `model` string in
 [`app/api/extract/route.ts`](app/api/extract/route.ts).
 
+## Header search (index and vector)
+
+The header search box calls [`@railtownai/railengine`](https://www.npmjs.com/package/@railtownai/railengine):
+
+- **Index search** — `searchIndex` (Azure Search style body, e.g. `{ search: "…" }`).
+- **Vector search** — `searchVectorStore` with **`VectorStore1`**.
+
+Uses the same `ENGINE_PAT`, `ENGINE_ID`, and optional `RAILTOWN_API_URL` as retrieve/delete. Your engine must have **indexing** and/or **VectorStore1** configured; otherwise you may get an empty result list with no error (the SDK swallows some failures).
+
 ## Schema
 
 The expense schema is defined in [`lib/schema.ts`](lib/schema.ts) and the

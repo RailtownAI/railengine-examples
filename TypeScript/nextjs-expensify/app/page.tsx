@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { ExpenseList } from "@/components/expense-list";
+import { HeaderSearch } from "@/components/header-search";
 import { ManualEntryDialog } from "@/components/manual-entry-dialog";
 import { ReceiptDropzone } from "@/components/receipt-dropzone";
 import { SummaryCard } from "@/components/summary-card";
@@ -62,8 +63,8 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 md:px-6">
-          <div className="flex items-center gap-2.5">
+        <div className="mx-auto grid max-w-5xl grid-cols-[1fr_auto] gap-x-3 gap-y-3 px-4 py-3 sm:grid-cols-[auto,minmax(0,1fr),auto] sm:items-center md:px-6">
+          <div className="flex items-center gap-2.5 sm:col-start-1 sm:row-start-1">
             <Receipt
               className="h-5 w-5 shrink-0 text-emerald-600 drop-shadow-sm dark:text-emerald-400"
               strokeWidth={2.25}
@@ -73,7 +74,7 @@ export default function Home() {
               Railengine Expensify
             </h1>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-end gap-2 sm:col-start-3 sm:row-start-1">
             <Button
               size="sm"
               variant="outline"
@@ -83,6 +84,9 @@ export default function Home() {
               <span className="hidden sm:inline">Add manually</span>
             </Button>
             <ThemeToggle />
+          </div>
+          <div className="col-span-2 min-w-0 sm:col-span-1 sm:col-start-2 sm:row-start-1">
+            <HeaderSearch />
           </div>
         </div>
       </header>
