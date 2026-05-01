@@ -24,6 +24,23 @@ type Props = {
   onDelete: (id: string) => void | Promise<void>;
 };
 
+function selectExpenseHandlers(
+  e: Expense,
+  setSelected: (expense: Expense) => void,
+) {
+  return {
+    onClick: () => {
+      setSelected(e);
+    },
+    onKeyDown: (ev: React.KeyboardEvent) => {
+      if (ev.key === "Enter" || ev.key === " ") {
+        ev.preventDefault();
+        setSelected(e);
+      }
+    },
+  };
+}
+
 export function ExpenseList({ expenses, loading, onDelete }: Props) {
   const [selected, setSelected] = React.useState<Expense | null>(null);
   if (loading) {
@@ -77,13 +94,7 @@ export function ExpenseList({ expenses, loading, onDelete }: Props) {
                   key={e.id}
                   className="cursor-pointer"
                   tabIndex={0}
-                  onClick={() => setSelected(e)}
-                  onKeyDown={(ev) => {
-                    if (ev.key === "Enter" || ev.key === " ") {
-                      ev.preventDefault();
-                      setSelected(e);
-                    }
-                  }}
+                  {...selectExpenseHandlers(e, setSelected)}
                 >
                   <TableCell className="font-medium">{e.vendor}</TableCell>
                   <TableCell>{formatDate(e.date)}</TableCell>
@@ -122,13 +133,7 @@ export function ExpenseList({ expenses, loading, onDelete }: Props) {
             role="button"
             tabIndex={0}
             className="relative cursor-pointer p-4 outline-none transition-colors hover:bg-accent/30 focus-visible:ring-2 focus-visible:ring-ring"
-            onClick={() => setSelected(e)}
-            onKeyDown={(ev) => {
-              if (ev.key === "Enter" || ev.key === " ") {
-                ev.preventDefault();
-                setSelected(e);
-              }
-            }}
+            {...selectExpenseHandlers(e, setSelected)}
           >
             <Button
               variant="ghost"
