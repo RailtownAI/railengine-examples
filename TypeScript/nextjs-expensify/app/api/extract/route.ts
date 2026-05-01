@@ -77,19 +77,16 @@ export async function POST(request: NextRequest) {
       parsed = JSON.parse(raw);
     } catch {
       return NextResponse.json(
-        { error: "Model returned invalid JSON", raw },
+        { error: "Model returned invalid JSON" },
         { status: 502 },
       );
     }
 
     const result = ExtractedExpenseSchema.safeParse(parsed);
     if (!result.success) {
+      console.error("[extract] schema validation failed", result.error.issues);
       return NextResponse.json(
-        {
-          error: "Extracted data failed schema validation",
-          details: result.error.issues,
-          raw: parsed,
-        },
+        { error: "Extracted data failed schema validation" },
         { status: 422 },
       );
     }
