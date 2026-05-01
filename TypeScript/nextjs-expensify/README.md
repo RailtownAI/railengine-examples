@@ -5,7 +5,7 @@ image onto the page and Claude vision extracts the structured fields (vendor,
 amount, currency, date, category, line items, tax, tip), which you confirm and
 save into Railengine.
 
-Built with Next.js 16 (app router), React 19, TypeScript, Tailwind CSS, and
+Built with Next.js 16 (app router), React 19.x, TypeScript, Tailwind CSS, and
 shadcn/ui. Includes a light/dark theme toggle and a mobile-responsive layout.
 
 ## Setup
