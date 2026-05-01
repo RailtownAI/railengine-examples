@@ -6,6 +6,7 @@ import { Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { ExpenseDetailSheet } from "@/components/expense-detail-sheet";
 import {
   Table,
   TableBody,
@@ -24,6 +25,7 @@ type Props = {
 };
 
 export function ExpenseList({ expenses, loading, onDelete }: Props) {
+  const [selected, setSelected] = React.useState<Expense | null>(null);
   if (loading) {
     return (
       <div className="space-y-2">
@@ -53,6 +55,10 @@ export function ExpenseList({ expenses, loading, onDelete }: Props) {
 
   return (
     <>
+      <ExpenseDetailSheet
+        expense={selected}
+        onClose={() => setSelected(null)}
+      />
       <div className="hidden md:block">
         <Card>
           <Table>
@@ -67,7 +73,18 @@ export function ExpenseList({ expenses, loading, onDelete }: Props) {
             </TableHeader>
             <TableBody>
               {sorted.map((e) => (
-                <TableRow key={e.id}>
+                <TableRow
+                  key={e.id}
+                  className="cursor-pointer"
+                  tabIndex={0}
+                  onClick={() => setSelected(e)}
+                  onKeyDown={(ev) => {
+                    if (ev.key === "Enter" || ev.key === " ") {
+                      ev.preventDefault();
+                      setSelected(e);
+                    }
+                  }}
+                >
                   <TableCell className="font-medium">{e.vendor}</TableCell>
                   <TableCell>{formatDate(e.date)}</TableCell>
                   <TableCell>
@@ -83,7 +100,10 @@ export function ExpenseList({ expenses, loading, onDelete }: Props) {
                       variant="ghost"
                       size="icon"
                       aria-label={`Delete ${e.vendor}`}
-                      onClick={() => onDelete(e.id)}
+                      onClick={(ev) => {
+                        ev.stopPropagation();
+                        void onDelete(e.id);
+                      }}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -97,13 +117,28 @@ export function ExpenseList({ expenses, loading, onDelete }: Props) {
 
       <div className="space-y-2 md:hidden">
         {sorted.map((e) => (
-          <Card key={e.id} className="relative p-4">
+          <Card
+            key={e.id}
+            role="button"
+            tabIndex={0}
+            className="relative cursor-pointer p-4 outline-none transition-colors hover:bg-accent/30 focus-visible:ring-2 focus-visible:ring-ring"
+            onClick={() => setSelected(e)}
+            onKeyDown={(ev) => {
+              if (ev.key === "Enter" || ev.key === " ") {
+                ev.preventDefault();
+                setSelected(e);
+              }
+            }}
+          >
             <Button
               variant="ghost"
               size="icon"
               aria-label={`Delete ${e.vendor}`}
               className="absolute right-2 top-2"
-              onClick={() => onDelete(e.id)}
+              onClick={(ev) => {
+                ev.stopPropagation();
+                void onDelete(e.id);
+              }}
             >
               <Trash2 className="h-4 w-4" />
             </Button>
