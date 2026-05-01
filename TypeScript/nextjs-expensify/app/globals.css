@@ -1,5 +1,9 @@
-@import "tailwindcss";
+@import url("tailwindcss");
+
+/* stylelint-disable at-rule-no-unknown */
+
 @config "../tailwind.config.mjs";
+/* stylelint-enable at-rule-no-unknown */
 
 @layer base {
   /* Light: forest green palette — mint wash background, deep pine text & CTAs */
@@ -54,6 +58,7 @@
   * {
     border-color: hsl(var(--border));
   }
+
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
