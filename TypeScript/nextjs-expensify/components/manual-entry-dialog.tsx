@@ -21,6 +21,15 @@ type Props = {
 
 export function ManualEntryDialog({ open, onOpenChange, onIngested }: Props) {
   const [submitting, setSubmitting] = React.useState(false);
+  const prevOpenRef = React.useRef(false);
+  const [formInstanceKey, setFormInstanceKey] = React.useState(0);
+
+  React.useEffect(() => {
+    if (open && !prevOpenRef.current) {
+      setFormInstanceKey((k) => k + 1);
+    }
+    prevOpenRef.current = open;
+  }, [open]);
 
   const handleSubmit = async (data: ExtractedExpense) => {
     setSubmitting(true);
@@ -54,6 +63,7 @@ export function ManualEntryDialog({ open, onOpenChange, onIngested }: Props) {
           </DialogDescription>
         </DialogHeader>
         <ExpenseForm
+          key={formInstanceKey}
           submitLabel="Save expense"
           submitting={submitting}
           onSubmit={handleSubmit}
