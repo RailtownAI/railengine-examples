@@ -14,6 +14,27 @@ type RailEngineWithRequest = RailEngine & {
   ): Promise<Response>;
 };
 
+async function readJsonResponseOrThrow(
+  res: Response,
+  context: string,
+): Promise<unknown> {
+  const text = await res.text().catch(() => "");
+  if (!res.ok) {
+    const snippet = text.length > 800 ? `${text.slice(0, 800)}…` : text;
+    throw new Error(
+      `${context} (${res.status}): ${snippet || res.statusText || "unknown"}`,
+    );
+  }
+  if (!text.trim()) {
+    return null;
+  }
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    throw new Error(`${context}: invalid JSON response`);
+  }
+}
+
 /** Try Body wrapper first, then a hit that is already a flat expense object. */
 function expenseFromSearchHit(hit: unknown): Expense | null {
   if (hit == null || typeof hit !== "object") return null;
@@ -260,7 +281,10 @@ export async function searchIndexExpenses(
     },
   });
 
-  const data: unknown = await res.json().catch(() => null);
+  const data: unknown = await readJsonResponseOrThrow(
+    res,
+    "Index search failed",
+  );
   const hits = storageDocumentsFromListResponse(data);
   const pairs: ScoredExpensePair[] = [];
   for (const hit of hits) {
@@ -296,7 +320,10 @@ export async function searchVectorExpenses(
     },
   );
 
-  const data: unknown = await res.json().catch(() => null);
+  const data: unknown = await readJsonResponseOrThrow(
+    res,
+    "Vector search failed",
+  );
   const hits = storageDocumentsFromListResponse(data);
   const pairs: ScoredExpensePair[] = [];
   for (const hit of hits) {
