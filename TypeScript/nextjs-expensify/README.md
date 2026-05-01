@@ -1,4 +1,4 @@
-# Expensify-style Expense Tracker powered by Railengine
+# Railengine Expense Tracker
 
 A Next.js example app that ingests receipts into Railengine. Drop a receipt
 image onto the page and Claude vision extracts the structured fields (vendor,
