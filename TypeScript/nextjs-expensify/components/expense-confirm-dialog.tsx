@@ -17,6 +17,8 @@ type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initial: ExtractedExpense | null;
+  /** Increments on each successful extract so ExpenseForm remounts before `initial`. */
+  formInstanceKey: number;
   onIngested: () => void | Promise<void>;
 };
 
@@ -24,6 +26,7 @@ export function ExpenseConfirmDialog({
   open,
   onOpenChange,
   initial,
+  formInstanceKey,
   onIngested,
 }: Props) {
   const [submitting, setSubmitting] = React.useState(false);
@@ -61,6 +64,7 @@ export function ExpenseConfirmDialog({
           </DialogDescription>
         </DialogHeader>
         <ExpenseForm
+          key={formInstanceKey}
           initial={initial}
           submitLabel="Save expense"
           submitting={submitting}
