@@ -18,13 +18,7 @@ import {
   PopoverAnchor,
   PopoverContent,
 } from "@/components/ui/popover";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { ExpenseDetailSheet } from "@/components/expense-detail-sheet";
 import type { ExpenseSearchResult } from "@/lib/schema";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
 
@@ -219,88 +213,12 @@ export function HeaderSearch() {
       </PopoverContent>
     </Popover>
 
-    <Sheet
-      open={!!selected}
-      onOpenChange={(next) => {
-        if (!next) setSelected(null);
-      }}
-    >
-      <SheetContent side="right" className="flex w-full flex-col sm:max-w-md">
-        {selected ? (
-          <>
-            <SheetHeader className="space-y-1 border-b border-border pb-4 text-left">
-              <SheetTitle className="pr-8">{selected.vendor}</SheetTitle>
-              <SheetDescription asChild>
-                <div className="flex flex-wrap items-center gap-2 text-left">
-                  <span className="text-base font-semibold tabular-nums text-foreground">
-                    {formatCurrency(selected.amount, selected.currency)}
-                  </span>
-                  <span className="text-muted-foreground">·</span>
-                  <span>{formatDate(selected.date)}</span>
-                  <Badge variant="secondary" className="capitalize">
-                    {selected.category}
-                  </Badge>
-                  {selected.relevancePercent !== undefined ? (
-                    <Badge
-                      variant="outline"
-                      className="tabular-nums"
-                      title={matchTooltip[mode]}
-                    >
-                      {selected.relevancePercent}% match
-                    </Badge>
-                  ) : null}
-                </div>
-              </SheetDescription>
-            </SheetHeader>
-
-            <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto py-4">
-              <div className="space-y-2">
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Line items
-                </p>
-                <ul className="space-y-2 rounded-md border border-border bg-muted/30 p-3">
-                  {selected.lineItems.map((line, i) => (
-                    <li
-                      key={`${selected.id}-line-${i}`}
-                      className="flex justify-between gap-2 text-sm"
-                    >
-                      <span className="text-muted-foreground">
-                        {line.description}
-                      </span>
-                      <span className="shrink-0 tabular-nums">
-                        {formatCurrency(line.price, selected.currency)}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div>
-                  <p className="text-xs text-muted-foreground">Tax</p>
-                  <p className="font-medium tabular-nums">
-                    {formatCurrency(selected.tax, selected.currency)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Tip</p>
-                  <p className="font-medium tabular-nums">
-                    {formatCurrency(selected.tip, selected.currency)}
-                  </p>
-                </div>
-              </div>
-
-              <p className="text-xs text-muted-foreground">
-                ID:{" "}
-                <code className="rounded bg-muted px-1 py-0.5 text-[0.7rem]">
-                  {selected.id}
-                </code>
-              </p>
-            </div>
-          </>
-        ) : null}
-      </SheetContent>
-    </Sheet>
+    <ExpenseDetailSheet
+      expense={selected}
+      onClose={() => setSelected(null)}
+      relevancePercent={selected?.relevancePercent}
+      relevanceTitle={matchTooltip[mode]}
+    />
     </>
   );
 }
