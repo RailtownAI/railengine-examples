@@ -1,0 +1,66 @@
+@import url("tailwindcss");
+
+/* stylelint-disable at-rule-no-unknown */
+
+@config "../tailwind.config.mjs";
+/* stylelint-enable at-rule-no-unknown */
+
+@layer base {
+  /* Light: forest green palette — mint wash background, deep pine text & CTAs */
+  :root {
+    --background: 142 32% 96%;
+    --foreground: 152 42% 14%;
+    --card: 140 28% 98%;
+    --card-foreground: 152 42% 14%;
+    --popover: 140 28% 99%;
+    --popover-foreground: 152 42% 14%;
+    --primary: 152 48% 22%;
+    --primary-foreground: 138 40% 97%;
+    --secondary: 138 22% 90%;
+    --secondary-foreground: 152 42% 16%;
+    --muted: 138 18% 91%;
+    --muted-foreground: 148 14% 38%;
+    --accent: 140 26% 88%;
+    --accent-foreground: 152 45% 16%;
+    --destructive: 0 72% 42%;
+    --destructive-foreground: 138 40% 98%;
+    --border: 138 16% 84%;
+    --input: 138 16% 84%;
+    --ring: 152 45% 32%;
+    --radius: 0.5rem;
+  }
+
+  /* Dark: deep evergreen (still optional via theme toggle) */
+  .dark {
+    --background: 152 32% 9%;
+    --foreground: 138 35% 94%;
+    --card: 152 28% 11%;
+    --card-foreground: 138 35% 94%;
+    --popover: 152 28% 11%;
+    --popover-foreground: 138 35% 94%;
+    --primary: 138 38% 86%;
+    --primary-foreground: 152 48% 14%;
+    --secondary: 148 22% 18%;
+    --secondary-foreground: 138 30% 92%;
+    --muted: 150 20% 16%;
+    --muted-foreground: 138 12% 65%;
+    --accent: 148 24% 20%;
+    --accent-foreground: 138 35% 94%;
+    --destructive: 0 55% 42%;
+    --destructive-foreground: 138 40% 98%;
+    --border: 150 18% 20%;
+    --input: 150 18% 20%;
+    --ring: 138 38% 70%;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
+}

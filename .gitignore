@@ -77,10 +77,13 @@ htmlcov/
 .dmypy.json
 dmypy.json
 
-.next
-.cursor
+**/.next
+**/.cursor
+**/.claude
+**/.codex
 
-package-lock.json
+**/package-lock.json
+**/bun.lock
 
 **/.vs/*
 **/packages/*
@@ -89,3 +92,5 @@ package-lock.json
 [Rr]elease/
 **/Secrets.cs
 **/secrets.py
+
+
