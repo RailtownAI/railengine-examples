@@ -1,7 +1,7 @@
 {
-  "name": "railengine-nextjs-expensify",
+  "name": "railengine-nextjs-expense-tracker",
   "author": "Railtown AI",
-  "description": "An Expensify-style Next.js app with Railengine and Claude vision receipt OCR",
+  "description": "Next.js expense tracker with Railengine and Claude vision receipt OCR",
   "version": "0.1.0",
   "private": true,
   "scripts": {
