@@ -40,6 +40,10 @@ shadcn/ui. Includes a light/dark theme toggle and a mobile-responsive layout.
 
    Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+## Security (deployments)
+
+Treat this repo as a **local / controlled demo**. The Next.js route handlers forward to Railengine (PAT/token) and, when OCR is enabled, Anthropic — **without end-user authentication or rate limits**. Hosting it on the public internet exposes those credentials to misuse and billed usage. Prefer VPN or private networking, secrets in the deployment environment only, auth in front of the app, or your own quotas and monitoring if you expose it outward.
+
 ## How it works
 
 ```
@@ -66,7 +70,7 @@ The header search box calls [`@railtownai/railengine`](https://www.npmjs.com/pac
 - **Index search** — `searchIndex` (Azure Search style body, e.g. `{ search: "…" }`).
 - **Vector search** — `searchVectorStore` with **`VectorStore1`**.
 
-Uses the same `ENGINE_PAT`, `ENGINE_ID`, and optional `RAILTOWN_API_URL` as retrieve/delete. Your engine must have **indexing** and/or **VectorStore1** configured; otherwise you may get an empty result list with no error (the SDK swallows some failures).
+Uses the same `ENGINE_PAT`, `ENGINE_ID`, and optional `RAILTOWN_API_URL` as retrieve/delete. Your engine must have **indexing** and/or **VectorStore1** configured. Non-success HTTP responses from the indexing or embeddings endpoints surface as errors in `/api/search` instead of silently empty results.
 
 ## Schema
 
