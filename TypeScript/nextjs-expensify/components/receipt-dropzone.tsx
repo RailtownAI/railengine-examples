@@ -37,6 +37,8 @@ export function ReceiptDropzone({ onIngested }: Props) {
     null,
   );
   const [confirmOpen, setConfirmOpen] = React.useState(false);
+  /** Bumps whenever a new extraction succeeds so ExpenseForm remounts with fresh state. */
+  const [confirmFormInstanceKey, setConfirmFormInstanceKey] = React.useState(0);
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   const handleFile = React.useCallback(
@@ -60,6 +62,7 @@ export function ReceiptDropzone({ onIngested }: Props) {
           throw new Error(data.error ?? `Extraction failed (${res.status})`);
         }
         setExtracted(data as ExtractedExpense);
+        setConfirmFormInstanceKey((k) => k + 1);
         setConfirmOpen(true);
       } catch (err) {
         toast.error(
@@ -168,6 +171,7 @@ export function ReceiptDropzone({ onIngested }: Props) {
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
         initial={extracted}
+        formInstanceKey={confirmFormInstanceKey}
         onIngested={onIngested}
       />
     </>
