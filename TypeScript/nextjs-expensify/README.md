@@ -42,11 +42,16 @@ shadcn/ui. Includes a light/dark theme toggle and a mobile-responsive layout.
 
 ## Security (deployments)
 
-Treat this repo as a **local / controlled demo**. The Next.js route handlers forward to Railengine (PAT/token) and, when OCR is enabled, Anthropic — **without end-user authentication or rate limits**. Hosting it on the public internet exposes those credentials to misuse and billed usage. Prefer VPN or private networking, secrets in the deployment environment only, auth in front of the app, or your own quotas and monitoring if you expose it outward.
+Treat this repository as a **local / controlled demo**. The Next.js route
+handlers forward to Railengine (PAT/token) and, when OCR is enabled, Anthropic —
+**without end user authentication or rate limits**. Hosting it on the public
+internet exposes those credentials to misuse and billed usage. Prefer VPN or
+private networking, secrets in the deployment environment only, auth in front
+of the app, or your own quotas and monitoring if you expose it outward.
 
 ## How it works
 
-```
+```text
 image dropped
     → FileReader → base64
     → POST /api/extract
