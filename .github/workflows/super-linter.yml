@@ -29,5 +29,9 @@ jobs:
         env:
           VALIDATE_ALL_CODEBASE: false
           VALIDATE_PYTHON_ISORT: false
+          # ts-standard uses a single --project tsconfig; nested Next apps each have their own tsconfig
+          # and @/* aliases, which breaks Super Linter's default project path (typescript-eslint parse errors).
+          # VALIDATE_TYPESCRIPT_ES still lints TypeScript.
+          VALIDATE_TYPESCRIPT_STANDARD: false
           DEFAULT_BRANCH: "main"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
