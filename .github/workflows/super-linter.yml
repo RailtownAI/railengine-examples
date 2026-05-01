@@ -16,9 +16,13 @@ on:
 jobs:
   run-lint:
     runs-on: ubuntu-latest
+    env:
+      # Opt into Node.js 24 composites (GitHub deprecation of Node 20 actions).
+      # See https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           # Full git history is needed to get a proper 
           # list of changed files within `super-linter`
