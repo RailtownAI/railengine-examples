@@ -5,9 +5,10 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
-  title: "Railengine Expensify",
+  title: "Railengine Expense Tracker",
   description:
-    "Expensify-style expense tracker built on Railengine with Claude vision receipt OCR",
+    "Expense tracker built on Railengine with Claude vision receipt OCR",
+  icons: { icon: "/logo-railengine-dark.png" },
 };
 
 export default function RootLayout({

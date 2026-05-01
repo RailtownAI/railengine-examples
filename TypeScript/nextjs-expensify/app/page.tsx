@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Plus, Receipt } from "lucide-react";
+import Image from "next/image";
+import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -65,13 +66,26 @@ export default function Home() {
       <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="mx-auto grid max-w-5xl grid-cols-[1fr_auto] gap-x-3 gap-y-3 px-4 py-3 sm:grid-cols-[auto,minmax(0,1fr),auto] sm:items-center md:px-6">
           <div className="flex items-center gap-2.5 sm:col-start-1 sm:row-start-1">
-            <Receipt
-              className="h-5 w-5 shrink-0 text-emerald-600 drop-shadow-sm dark:text-emerald-400"
-              strokeWidth={2.25}
-              aria-hidden
-            />
+            <span className="relative h-8 w-8 shrink-0">
+              <Image
+                src="/logo-railengine-dark.png"
+                alt=""
+                width={32}
+                height={32}
+                className="absolute inset-0 h-full w-full object-contain dark:hidden"
+                priority
+              />
+              <Image
+                src="/logo-railengine-light.png"
+                alt=""
+                width={32}
+                height={32}
+                className="absolute inset-0 hidden h-full w-full object-contain dark:block"
+                priority
+              />
+            </span>
             <h1 className="bg-gradient-to-r from-emerald-900 via-emerald-600 to-teal-500 bg-clip-text text-base font-semibold text-transparent sm:text-lg dark:bg-none dark:text-emerald-300">
-              Railengine Expensify
+              Railengine Expense Tracker
             </h1>
           </div>
           <div className="flex items-center justify-end gap-2 sm:col-start-3 sm:row-start-1">
