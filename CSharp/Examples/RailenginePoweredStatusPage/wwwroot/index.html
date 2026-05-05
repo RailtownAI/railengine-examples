@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Status Page</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <h1>System Status</h1>
+
+  <div class="charts">
+    <div class="card">
+      <h2>Engine Load</h2>
+      <div class="chart-wrap"><canvas id="chart-engine-load"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>Team Members</h2>
+      <div class="chart-wrap"><canvas id="chart-team-members"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>Logs</h2>
+      <div class="chart-wrap"><canvas id="chart-logs"></canvas></div>
+    </div>
+  </div>
+
+  <p id="error" class="error" hidden></p>
+
+  <script>
+    const METRICS = [
+      { key: 'engine-load',   canvasId: 'chart-engine-load',   color: '#6366f1' },
+      { key: 'team-members',  canvasId: 'chart-team-members',  color: '#22d3ee' },
+      { key: 'logs',          canvasId: 'chart-logs',          color: '#34d399' },
+    ];
+
+    function formatTimestamp(ms) {
+      return new Date(ms).toLocaleTimeString();
+    }
+
+    function buildChart(canvasId, labels, values, color) {
+      const ctx = document.getElementById(canvasId).getContext('2d');
+      return new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            data: values,
+            borderColor: color,
+            backgroundColor: color + '22',
+            borderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            fill: true,
+            tension: 0.3,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: '#64748b' }, grid: { color: '#2d3248' } },
+            y: { ticks: { color: '#64748b' }, grid: { color: '#2d3248' } },
+          },
+        },
+      });
+    }
+
+    async function loadMetrics() {
+      const res = await fetch('/api/metrics');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    }
+
+    async function init() {
+      try {
+        const records = await loadMetrics();
+
+        for (const { key, canvasId, color } of METRICS) {
+          const subset = records
+            .filter(r => r.metric === key)
+            .sort((a, b) => a.timestamp - b.timestamp);
+
+          const labels = subset.map(r => formatTimestamp(r.timestamp));
+          const values = subset.map(r => r.value);
+
+          buildChart(canvasId, labels, values, color);
+        }
+      } catch (err) {
+        const el = document.getElementById('error');
+        el.textContent = `Failed to load metrics: ${err.message}`;
+        el.hidden = false;
+      }
+    }
+
+    init();
+    setInterval(init, 5 * 60 * 1000);
+  </script>
+</body>
+</html>
