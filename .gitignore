@@ -85,12 +85,21 @@ dmypy.json
 **/package-lock.json
 **/bun.lock
 
-**/.vs/*
-**/packages/*
+**/.vs/
+**/packages/
+[Bb]in/
 [Oo]bj/
 [Dd]ebug/
 [Rr]elease/
+**/TestResults/
+*.user
+*.suo
+*.rsuser
+*.nupkg
+*.snupkg
+**/publish/
 **/Secrets.cs
 **/secrets.py
 
 
+/CSharp/Examples/RailenginePoweredStatusPage/appsettings.Development.json
