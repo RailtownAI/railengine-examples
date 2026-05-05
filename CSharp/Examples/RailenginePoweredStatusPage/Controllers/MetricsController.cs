@@ -20,7 +20,12 @@ public class MetricsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<List<MetricRecord>>> GetMetrics()
     {
-        // TODO: query railengineClient with engineId
-        return Ok(new List<MetricRecord>());
+        var results = await railengineClient.ListStorageDocuments<MetricRecord>(
+            engineId,
+            pageNumber: 1,
+            pageSize: 100
+        );
+
+        return Ok(results);
     }
 }
