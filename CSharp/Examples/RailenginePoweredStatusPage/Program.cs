@@ -1,4 +1,5 @@
 using Railengine;
+using RailenginePoweredStatusPage.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,8 @@ builder.Services.AddSingleton<RailengineClient>(sp =>
 });
 
 var app = builder.Build();
+
+app.UseMiddleware<IPAllowlistMiddleware>();
 
 app.UseDefaultFiles();
 app.UseStaticFiles();

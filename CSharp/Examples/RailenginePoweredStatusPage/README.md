@@ -18,11 +18,26 @@ The engine is expected to return records in the following format:
 
 Each record has a `metric` name, a Unix millisecond `timestamp`, and a numeric `value`. Multiple records per metric are supported and will be plotted as a time series.
 
+## Configuration
+
+### IP allowlist
+
+Access to the site is restricted by IP address. Any request from an IP not on the allowlist receives a `403 Forbidden` response.
+
+The allowed IPs are configured via the `AllowedIPs` array in `appsettings.json`:
+
+```json
+"AllowedIPs": [ "127.0.0.1", "::1" ]
+```
+
+The default permits localhost only. Add the IP addresses of any machines that should be able to view the status page.
+
 ## Getting started
 
 1. Copy `appsettings.Development.sample.json` to `appsettings.Development.json`
 2. Fill in your Railengine PAT and engine ID
-3. Run the app:
+3. Add any additional IP addresses to `AllowedIPs` as needed
+4. Run the app:
 
 ```bash
 dotnet run

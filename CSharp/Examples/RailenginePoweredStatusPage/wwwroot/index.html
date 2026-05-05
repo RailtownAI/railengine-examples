@@ -77,6 +77,9 @@
       try {
         const records = await loadMetrics();
 
+        document.getElementById('error').hidden = true;
+        document.querySelector('.charts').hidden = false;
+
         for (const { key, canvasId, color } of METRICS) {
           const subset = records
             .filter(r => r.metric === key)
@@ -88,6 +91,7 @@
           buildChart(canvasId, labels, values, color);
         }
       } catch (err) {
+        document.querySelector('.charts').hidden = true;
         const el = document.getElementById('error');
         el.textContent = `Failed to load metrics: ${err.message}`;
         el.hidden = false;
