@@ -100,6 +100,8 @@ dmypy.json
 **/publish/
 **/Secrets.cs
 **/secrets.py
-
+**/PublishProfiles
+**/ServiceDependencies
 
 /CSharp/Examples/RailenginePoweredStatusPage/appsettings.Development.json
+
