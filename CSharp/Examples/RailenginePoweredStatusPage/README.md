@@ -4,11 +4,11 @@ A minimal ASP.NET Core web app that demonstrates using the [Railengine](https://
 
 ## What it does
 
-The app exposes a `/api/metrics` endpoint that queries a Railengine engine for metric records, then serves a status page that renders the results as one Chart.js line chart per configured metric. Each card header shows the most recent value with its unit, rounded to 2 decimal places. The page fetches updated data every 5 minutes (configurable via `REFRESH_INTERVAL_MS` in `wwwroot/index.html`) and updates the charts in place — no full page reload.
+The app exposes a `/api/metrics` endpoint that queries Railengine for metric records, then serves a status page that renders the results as one Chart.js line chart per configured metric. Each card header shows the most recent value with its unit, rounded to 2 decimal places. The page fetches updated data every 5 minutes (configurable via `REFRESH_INTERVAL_MS` in `wwwroot/index.html`) and updates the charts in place — no full page reload.
 
 ## Expected metric shape
 
-The engine is expected to return records in the following format:
+Railengine is expected to return records in the following format:
 
 ```json
 { "metric": "latency-p95",  "timestamp": 1778023020646, "value": 87.3 }
