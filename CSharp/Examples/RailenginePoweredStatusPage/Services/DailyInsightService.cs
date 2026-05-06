@@ -1,4 +1,3 @@
-using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 
@@ -162,36 +161,36 @@ public class DailyInsightService : BackgroundService
             switch (eventType)
             {
                 case "content_block_start":
-                {
-                    var index = root.GetProperty("index").GetInt32();
-                    var block = root.GetProperty("content_block");
-                    var blockType = block.GetProperty("type").GetString() ?? "";
-                    var sb = new StringBuilder();
-                    if (blockType == "text" && block.TryGetProperty("text", out var initialText))
                     {
-                        sb.Append(initialText.GetString());
+                        var index = root.GetProperty("index").GetInt32();
+                        var block = root.GetProperty("content_block");
+                        var blockType = block.GetProperty("type").GetString() ?? "";
+                        var sb = new StringBuilder();
+                        if (blockType == "text" && block.TryGetProperty("text", out var initialText))
+                        {
+                            sb.Append(initialText.GetString());
+                        }
+                        blocks[index] = (blockType, sb);
+                        break;
                     }
-                    blocks[index] = (blockType, sb);
-                    break;
-                }
                 case "content_block_delta":
-                {
-                    var index = root.GetProperty("index").GetInt32();
-                    var delta = root.GetProperty("delta");
-                    if (delta.GetProperty("type").GetString() == "text_delta"
-                        && blocks.TryGetValue(index, out var entry))
                     {
-                        entry.Text.Append(delta.GetProperty("text").GetString());
+                        var index = root.GetProperty("index").GetInt32();
+                        var delta = root.GetProperty("delta");
+                        if (delta.GetProperty("type").GetString() == "text_delta"
+                            && blocks.TryGetValue(index, out var entry))
+                        {
+                            entry.Text.Append(delta.GetProperty("text").GetString());
+                        }
+                        break;
                     }
-                    break;
-                }
                 case "error":
-                {
-                    var msg = root.TryGetProperty("error", out var err) && err.TryGetProperty("message", out var m)
-                        ? m.GetString()
-                        : data;
-                    throw new InvalidOperationException($"Claude API stream error: {msg}");
-                }
+                    {
+                        var msg = root.TryGetProperty("error", out var err) && err.TryGetProperty("message", out var m)
+                            ? m.GetString()
+                            : data;
+                        throw new InvalidOperationException($"Claude API stream error: {msg}");
+                    }
             }
         }
 

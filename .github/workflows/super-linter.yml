@@ -39,3 +39,7 @@ jobs:
           VALIDATE_TYPESCRIPT_STANDARD: false
           DEFAULT_BRANCH: "main"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Suppress per-file "successfully linted" INFO lines and tool banners.
+          # Only WARN/ERROR output is shown. Switch back to VERBOSE if you need
+          # to debug which files a linter is touching.
+          LOG_LEVEL: ERROR

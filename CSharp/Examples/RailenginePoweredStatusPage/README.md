@@ -4,7 +4,11 @@ A minimal ASP.NET Core web app that demonstrates using the [Railengine](https://
 
 ## What it does
 
-The app exposes a `/api/metrics` endpoint that queries Railengine for metric records, then serves a status page that renders the results as one Chart.js line chart per configured metric. Each card header shows the most recent value with its unit, rounded to 2 decimal places. The page fetches updated data every 5 minutes (configurable via `REFRESH_INTERVAL_MS` in `wwwroot/index.html`) and updates the charts in place — no full page reload.
+The app exposes a `/api/metrics` endpoint that queries Railengine for metric records, then
+serves a status page that renders the results as one Chart.js line chart per configured metric.
+Each card header shows the most recent value with its unit, rounded to 2 decimal places. The
+page fetches updated data every 5 minutes (configurable via `REFRESH_INTERVAL_MS` in
+`wwwroot/index.html`) and updates the charts in place — no full page reload.
 
 ## Expected metric shape
 
@@ -46,13 +50,18 @@ Cards are generated from this list at page load, so adding, removing, renaming, 
 
 ## Daily insight (optional)
 
-If an `Anthropic:ApiKey` is configured, the app runs a `BackgroundService` that wakes once every 24 hours, calls the Claude API with the engine's [Railengine MCP server](https://cndr.railtown.ai/api/mcp/engine/{EngineId}) attached as a tool source, and asks Claude to review the recent metric data. The result is exposed at `/api/insight` and rendered as a "Daily Insight" card above the charts, with a "generated Xh ago" timestamp.
+If an `Anthropic:ApiKey` is configured, the app runs a `BackgroundService` that wakes once every
+24 hours, calls the Claude API with the engine's
+[Railengine MCP server](https://cndr.railtown.ai/api/mcp/engine/{EngineId}) attached as a tool
+source, and asks Claude to review the recent metric data. The result is exposed at
+`/api/insight` and rendered as a "Daily Insight" card above the charts, with a "generated Xh
+ago" timestamp.
 
 This demonstrates Claude autonomously deciding which Railengine tools to call (`getEngineStorageDocuments`, `searchEngineDocuments`, …) and reasoning over the results — useful as a worked example of the MCP client beta in C#. The same PAT used for the SDK is forwarded as the MCP server's bearer token.
 
 The model is configurable via `Anthropic:Model` in `appsettings.json` and defaults to `claude-haiku-4-5-20251001` for speed and cost; swap to a Sonnet or Opus identifier if you'd prefer richer prose at the expense of latency.
 
-The prompt in `Services/DailyInsightService.cs` is deliberately tuned for short, plain-text output (low `max_tokens`, "no markdown" instructions, one line per metric). If you adapt it for your own Railengine and want a longer or formatted summary, expect to relax those constraints.
+The prompt in `Services/DailyInsightService.cs` is deliberately tuned for short, plain-text output (low `max_tokens`, "no Markdown" instructions, one line per metric). If you adapt it for your own Railengine and want a longer or formatted summary, expect to relax those constraints.
 
 If `Anthropic:ApiKey` is not set, the service logs a notice and exits cleanly; the insight card simply doesn't appear.
 
