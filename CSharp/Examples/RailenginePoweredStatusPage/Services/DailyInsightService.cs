@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json;
 
 namespace RailenginePoweredStatusPage.Services;
@@ -18,10 +19,11 @@ public class DailyInsightService : BackgroundService
     private readonly string mcpServerName;
 
     private static readonly TimeSpan Interval = TimeSpan.FromHours(24);
+    private static readonly TimeSpan RequestTimeout = TimeSpan.FromMinutes(10);
 
     private const string Prompt =
-        "You are an automated reviewer for a status page dashboard. " +
-        "Use the available Railengine tools to fetch the most recent metric records stored in this engine, then summarize what you find.\n\n" +
+        "You are an automated reviewer for a status page dashboard.\n\n" +
+        "Use AT MOST 2 Railengine tool calls. Call `getEngineStorageDocuments` to fetch the 50 most recent metric records in a single call, then summarize. Do not use the vector or embedding search tools — this engine has no vectors. Do not make additional exploratory calls.\n\n" +
         "Output format (strict):\n" +
         "- One single line per metric, nothing else.\n" +
         "- Format: \"{Metric name}: {one-sentence insight including the latest value and any notable trend}\"\n" +
@@ -76,7 +78,15 @@ public class DailyInsightService : BackgroundService
 
     private async Task GenerateAsync(CancellationToken ct)
     {
+        logger.LogInformation("Starting daily insight generation…");
+
+        // Bound the entire streamed call by RequestTimeout via a linked CTS,
+        // and disable HttpClient.Timeout so it doesn't cancel the stream mid-read.
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        cts.CancelAfter(RequestTimeout);
+
         using var client = httpClientFactory.CreateClient();
+        client.Timeout = Timeout.InfiniteTimeSpan;
         using var request = new HttpRequestMessage(HttpMethod.Post, "https://api.anthropic.com/v1/messages");
         request.Headers.Add("x-api-key", apiKey);
         request.Headers.Add("anthropic-version", apiVersion);
@@ -85,7 +95,8 @@ public class DailyInsightService : BackgroundService
         var body = new
         {
             model,
-            max_tokens = 1024,
+            max_tokens = 256,
+            stream = true,
             mcp_servers = new[]
             {
                 new
@@ -104,27 +115,91 @@ public class DailyInsightService : BackgroundService
 
         request.Content = JsonContent.Create(body);
 
-        using var response = await client.SendAsync(request, ct);
-        var responseBody = await response.Content.ReadAsStringAsync(ct);
+        // ResponseHeadersRead returns as soon as headers arrive; stream is read below.
+        using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token);
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new InvalidOperationException($"Claude API returned {(int)response.StatusCode}: {responseBody}");
+            var errBody = await response.Content.ReadAsStringAsync(cts.Token);
+            throw new InvalidOperationException($"Claude API returned {(int)response.StatusCode}: {errBody}");
         }
 
-        using var doc = JsonDocument.Parse(responseBody);
-        var content = doc.RootElement.GetProperty("content");
-
-        // Take the final text block. Earlier text blocks are narration emitted
-        // between MCP tool calls ("I'll start by exploring…") which we don't want.
-        var text = content.EnumerateArray()
-            .Where(b => b.GetProperty("type").GetString() == "text")
-            .Select(b => b.GetProperty("text").GetString())
-            .Where(s => !string.IsNullOrWhiteSpace(s))
-            .LastOrDefault() ?? "";
+        var text = await ReadTextFromStreamAsync(response, cts.Token);
 
         state.Text = text;
         state.GeneratedAt = DateTimeOffset.UtcNow;
         logger.LogInformation("Daily insight generated ({Length} chars)", text.Length);
+    }
+
+    // Parse Anthropic's SSE stream and accumulate text per content-block index.
+    // We only care about blocks of type "text"; mcp_tool_use and mcp_tool_result
+    // blocks are tracked but their content ignored. The final assistant answer
+    // is the highest-indexed text block.
+    private static async Task<string> ReadTextFromStreamAsync(HttpResponseMessage response, CancellationToken ct)
+    {
+        var blocks = new Dictionary<int, (string Type, StringBuilder Text)>();
+
+        using var stream = await response.Content.ReadAsStreamAsync(ct);
+        using var reader = new StreamReader(stream);
+
+        string? eventType = null;
+        string? line;
+        while ((line = await reader.ReadLineAsync(ct)) != null)
+        {
+            if (line.StartsWith("event:"))
+            {
+                eventType = line["event:".Length..].Trim();
+                continue;
+            }
+            if (!line.StartsWith("data:")) continue;
+
+            var data = line["data:".Length..].Trim();
+            if (string.IsNullOrEmpty(data)) continue;
+
+            using var doc = JsonDocument.Parse(data);
+            var root = doc.RootElement;
+
+            switch (eventType)
+            {
+                case "content_block_start":
+                {
+                    var index = root.GetProperty("index").GetInt32();
+                    var block = root.GetProperty("content_block");
+                    var blockType = block.GetProperty("type").GetString() ?? "";
+                    var sb = new StringBuilder();
+                    if (blockType == "text" && block.TryGetProperty("text", out var initialText))
+                    {
+                        sb.Append(initialText.GetString());
+                    }
+                    blocks[index] = (blockType, sb);
+                    break;
+                }
+                case "content_block_delta":
+                {
+                    var index = root.GetProperty("index").GetInt32();
+                    var delta = root.GetProperty("delta");
+                    if (delta.GetProperty("type").GetString() == "text_delta"
+                        && blocks.TryGetValue(index, out var entry))
+                    {
+                        entry.Text.Append(delta.GetProperty("text").GetString());
+                    }
+                    break;
+                }
+                case "error":
+                {
+                    var msg = root.TryGetProperty("error", out var err) && err.TryGetProperty("message", out var m)
+                        ? m.GetString()
+                        : data;
+                    throw new InvalidOperationException($"Claude API stream error: {msg}");
+                }
+            }
+        }
+
+        return blocks
+            .OrderBy(kvp => kvp.Key)
+            .Where(kvp => kvp.Value.Type == "text")
+            .Select(kvp => kvp.Value.Text.ToString())
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .LastOrDefault() ?? "";
     }
 }
