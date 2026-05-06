@@ -11,9 +11,10 @@ The app exposes a `/api/metrics` endpoint that queries a Railengine engine for m
 The engine is expected to return records in the following format:
 
 ```json
-{ "metric": "engine-load", "timestamp": 1778023020646, "value": 64.2 }
-{ "metric": "team-members", "timestamp": 1778023021948, "value": 1240 }
-{ "metric": "logs", "timestamp": 1778023023341, "value": 0.133333 }
+{ "metric": "latency-p95",  "timestamp": 1778023020646, "value": 87.3 }
+{ "metric": "error-rate",   "timestamp": 1778023021948, "value": 2.4 }
+{ "metric": "active-users", "timestamp": 1778023023341, "value": 1240 }
+{ "metric": "requests",     "timestamp": 1778023024702, "value": 3742 }
 ```
 
 Each record has a `metric` name, a Unix millisecond `timestamp`, and a numeric `value`. Multiple records per metric are supported and will be plotted as a time series.
@@ -26,9 +27,10 @@ To adapt the page for a different set of metrics, edit only the `METRICS` array 
 
 ```js
 const METRICS = [
-  { key: 'engine-load',  label: 'Railengine',    unit: 'bytes/min', color: '#6366f1' },
-  { key: 'team-members', label: 'Users',         unit: 'users',     color: '#22d3ee', hideRepeats: true },
-  { key: 'logs',         label: 'Conductr Logs', unit: 'logs/min',  color: '#34d399' },
+  { key: 'latency-p95',  label: 'API Latency (p95)', unit: 'ms',         color: '#22d3ee' },
+  { key: 'error-rate',   label: 'Error Rate',        unit: 'errors/min', color: '#f59e0b' },
+  { key: 'active-users', label: 'Active Users',      unit: 'users',      color: '#34d399', hideRepeats: true },
+  { key: 'requests',     label: 'Requests',          unit: 'req/min',    color: '#6366f1' },
 ];
 ```
 
