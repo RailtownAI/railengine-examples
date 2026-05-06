@@ -9,20 +9,7 @@
 </head>
 <body>
   <h1>railtown.ai system metrics</h1>
-  <div class="charts">
-    <div class="card">
-      <h2>Railengine<span class="latest" id="latest-engine-load"></span></h2>
-      <div class="chart-wrap"><canvas id="chart-engine-load"></canvas></div>
-    </div>
-    <div class="card">
-      <h2>Users<span class="latest" id="latest-team-members"></span></h2>
-      <div class="chart-wrap"><canvas id="chart-team-members"></canvas></div>
-    </div>
-    <div class="card">
-      <h2>Conductr Logs <span class="latest" id="latest-logs"></span></h2>
-      <div class="chart-wrap"><canvas id="chart-logs"></canvas></div>
-    </div>
-  </div>
+  <div class="charts"></div>
 
   <p id="error" class="error" hidden></p>
 
@@ -34,19 +21,65 @@
   </footer>
 
   <script>
+    // To adapt this status page, edit only this list. Add, remove, rename,
+    // or recolor metrics here — the cards render automatically from it.
+    //   key:         matches the `metric` field on records returned by /api/metrics
+    //   label:       shown as the card header
+    //   unit:        appended after the latest reading
+    //   color:       line + fill color (any CSS color)
+    //   hideRepeats: optional. When true, point markers are suppressed for samples
+    //                whose value matches the previous one. Useful for metrics that
+    //                report constantly and you only want to highlight changes.
     const METRICS = [
-      { key: 'engine-load',   canvasId: 'chart-engine-load',   latestId: 'latest-engine-load',   color: '#6366f1', unit: 'bytes/min' },
-      { key: 'team-members',  canvasId: 'chart-team-members',  latestId: 'latest-team-members',  color: '#22d3ee', unit: 'users' },
-      { key: 'logs',          canvasId: 'chart-logs',          latestId: 'latest-logs',          color: '#34d399', unit: 'logs/min' },
+      { key: 'engine-load',  label: 'Railengine',    unit: 'bytes/min', color: '#6366f1' },
+      { key: 'team-members', label: 'Users',         unit: 'users',     color: '#22d3ee', hideRepeats: true },
+      { key: 'logs',         label: 'Conductr Logs', unit: 'logs/min',  color: '#34d399' },
     ];
+
+    const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
+
+    function buildCards(metrics, container) {
+      for (const metric of metrics) {
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        const heading = document.createElement('h2');
+        heading.append(metric.label);
+        const latest = document.createElement('span');
+        latest.className = 'latest';
+        heading.append(latest);
+
+        const wrap = document.createElement('div');
+        wrap.className = 'chart-wrap';
+        const canvas = document.createElement('canvas');
+        wrap.append(canvas);
+
+        card.append(heading, wrap);
+        container.append(card);
+
+        metric.latestEl = latest;
+        metric.canvas = canvas;
+      }
+    }
 
     function formatTimestamp(ms) {
       return new Date(ms).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
     }
 
-    function buildChart(canvasId, labels, values, color) {
-      const ctx = document.getElementById(canvasId).getContext('2d');
-      return new Chart(ctx, {
+    function formatLatest(value, unit) {
+      return `${value.toFixed(2).replace(/\.00$/, '')} ${unit}`;
+    }
+
+    function buildChart(canvas, labels, values, color, hideRepeats) {
+      const pointRadius = hideRepeats
+        ? ctx => {
+            const data = ctx.dataset.data;
+            const i = ctx.dataIndex;
+            return i > 0 && data[i] === data[i - 1] ? 0 : 4;
+          }
+        : 4;
+
+      return new Chart(canvas.getContext('2d'), {
         type: 'line',
         data: {
           labels,
@@ -55,7 +88,7 @@
             borderColor: color,
             backgroundColor: color + '22',
             borderWidth: 2,
-            pointRadius: 4,
+            pointRadius,
             pointHoverRadius: 6,
             fill: true,
             tension: 0.3,
@@ -79,8 +112,6 @@
       return res.json();
     }
 
-    const charts = {};
-
     async function refresh() {
       try {
         const records = await loadMetrics();
@@ -89,24 +120,22 @@
         document.querySelector('.charts').hidden = false;
 
         for (const metric of METRICS) {
-          const { key, canvasId, latestId, color, unit } = metric;
           const subset = records
-            .filter(r => r.metric === key)
+            .filter(r => r.metric === metric.key)
             .sort((a, b) => a.timestamp - b.timestamp);
 
           const labels = subset.map(r => formatTimestamp(r.timestamp));
           const values = subset.map(r => r.value);
 
           const latest = values.length ? values[values.length - 1] : 0;
-          document.getElementById(latestId).textContent = `${latest.toFixed(2).replace(/\.00$/, '')} ${unit}`;
+          metric.latestEl.textContent = formatLatest(latest, metric.unit);
 
-          if (charts[canvasId]) {
-            const chart = charts[canvasId];
-            chart.data.labels = labels;
-            chart.data.datasets[0].data = values;
-            chart.update();
+          if (metric.chart) {
+            metric.chart.data.labels = labels;
+            metric.chart.data.datasets[0].data = values;
+            metric.chart.update();
           } else {
-            charts[canvasId] = buildChart(canvasId, labels, values, color);
+            metric.chart = buildChart(metric.canvas, labels, values, metric.color, metric.hideRepeats);
           }
         }
       } catch (err) {
@@ -117,8 +146,9 @@
       }
     }
 
+    buildCards(METRICS, document.querySelector('.charts'));
     refresh();
-    setInterval(refresh, 5 * 60 * 1000);
+    setInterval(refresh, REFRESH_INTERVAL_MS);
   </script>
 </body>
 </html>
