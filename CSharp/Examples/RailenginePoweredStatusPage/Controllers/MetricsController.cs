@@ -26,6 +26,6 @@ public class MetricsController : ControllerBase
             pageSize: 100
         );
 
-        return Ok(results);
+        return Ok(results.Items.Select(i => i.Document).ToList());
     }
 }

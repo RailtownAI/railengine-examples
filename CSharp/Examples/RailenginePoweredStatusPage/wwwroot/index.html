@@ -3,39 +3,45 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Status Page</title>
+  <title>railtown.ai system metrics</title>
   <link rel="stylesheet" href="styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <h1>System Status</h1>
-
+  <h1>railtown.ai system metrics</h1>
   <div class="charts">
     <div class="card">
-      <h2>Engine Load</h2>
+      <h2>Railengine<span class="latest" id="latest-engine-load"></span></h2>
       <div class="chart-wrap"><canvas id="chart-engine-load"></canvas></div>
     </div>
     <div class="card">
-      <h2>Team Members</h2>
+      <h2>Users<span class="latest" id="latest-team-members"></span></h2>
       <div class="chart-wrap"><canvas id="chart-team-members"></canvas></div>
     </div>
     <div class="card">
-      <h2>Logs</h2>
+      <h2>Conductr Logs <span class="latest" id="latest-logs"></span></h2>
       <div class="chart-wrap"><canvas id="chart-logs"></canvas></div>
     </div>
   </div>
 
   <p id="error" class="error" hidden></p>
 
+  <footer class="powered-by">
+    <span>Powered by</span>
+    <a href="https://railengine.ai/" target="_blank" rel="noopener noreferrer">
+      <img src="cropped-Railengine_logo_dark-1-scaled-1-2048x585.png" alt="Railengine" />
+    </a>
+  </footer>
+
   <script>
     const METRICS = [
-      { key: 'engine-load',   canvasId: 'chart-engine-load',   color: '#6366f1' },
-      { key: 'team-members',  canvasId: 'chart-team-members',  color: '#22d3ee' },
-      { key: 'logs',          canvasId: 'chart-logs',          color: '#34d399' },
+      { key: 'engine-load',   canvasId: 'chart-engine-load',   latestId: 'latest-engine-load',   color: '#6366f1', unit: 'bytes/min' },
+      { key: 'team-members',  canvasId: 'chart-team-members',  latestId: 'latest-team-members',  color: '#22d3ee', unit: 'users' },
+      { key: 'logs',          canvasId: 'chart-logs',          latestId: 'latest-logs',          color: '#34d399', unit: 'logs/min' },
     ];
 
     function formatTimestamp(ms) {
-      return new Date(ms).toLocaleTimeString();
+      return new Date(ms).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
     }
 
     function buildChart(canvasId, labels, values, color) {
@@ -73,14 +79,17 @@
       return res.json();
     }
 
-    async function init() {
+    const charts = {};
+
+    async function refresh() {
       try {
         const records = await loadMetrics();
 
         document.getElementById('error').hidden = true;
         document.querySelector('.charts').hidden = false;
 
-        for (const { key, canvasId, color } of METRICS) {
+        for (const metric of METRICS) {
+          const { key, canvasId, latestId, color, unit } = metric;
           const subset = records
             .filter(r => r.metric === key)
             .sort((a, b) => a.timestamp - b.timestamp);
@@ -88,7 +97,17 @@
           const labels = subset.map(r => formatTimestamp(r.timestamp));
           const values = subset.map(r => r.value);
 
-          buildChart(canvasId, labels, values, color);
+          const latest = values.length ? values[values.length - 1] : 0;
+          document.getElementById(latestId).textContent = `${latest.toFixed(2).replace(/\.00$/, '')} ${unit}`;
+
+          if (charts[canvasId]) {
+            const chart = charts[canvasId];
+            chart.data.labels = labels;
+            chart.data.datasets[0].data = values;
+            chart.update();
+          } else {
+            charts[canvasId] = buildChart(canvasId, labels, values, color);
+          }
         }
       } catch (err) {
         document.querySelector('.charts').hidden = true;
@@ -98,8 +117,8 @@
       }
     }
 
-    init();
-    setInterval(init, 5 * 60 * 1000);
+    refresh();
+    setInterval(refresh, 5 * 60 * 1000);
   </script>
 </body>
 </html>

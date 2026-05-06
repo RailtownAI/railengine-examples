@@ -21,6 +21,10 @@ h1 {
   gap: 1.5rem;
 }
 
+.charts[hidden] {
+  display: none;
+}
+
 .card {
   background: #1e2130;
   border: 1px solid #2d3248;
@@ -29,12 +33,23 @@ h1 {
 }
 
 .card h2 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
   font-size: 0.85rem;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: #94a3b8;
   margin-bottom: 1rem;
+}
+
+.card h2 .latest {
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: #f8fafc;
 }
 
 .chart-wrap {
@@ -46,4 +61,24 @@ h1 {
   color: #f87171;
   font-size: 0.875rem;
   margin-top: 1rem;
+}
+
+.powered-by {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-top: 3rem;
+  color: #64748b;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+}
+
+.powered-by img {
+  height: 2.8rem;
+  width: auto;
+  display: block;
+  background: #e2e8f0;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
 }
