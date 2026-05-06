@@ -9,6 +9,12 @@
 </head>
 <body>
   <h1>railtown.ai system metrics</h1>
+
+  <section class="insight" hidden>
+    <h2>Daily Insight <span class="insight-meta"></span></h2>
+    <p class="insight-body"></p>
+  </section>
+
   <div class="charts"></div>
 
   <p id="error" class="error" hidden></p>
@@ -112,6 +118,33 @@
       return res.json();
     }
 
+    function formatTimeAgo(iso) {
+      if (!iso) return '';
+      const ms = Date.now() - new Date(iso).getTime();
+      const minutes = Math.floor(ms / 60000);
+      if (minutes < 1) return 'just now';
+      if (minutes < 60) return `${minutes}m ago`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `${hours}h ago`;
+      const days = Math.floor(hours / 24);
+      return `${days}d ago`;
+    }
+
+    async function loadInsight() {
+      const section = document.querySelector('.insight');
+      try {
+        const res = await fetch('/api/insight');
+        if (!res.ok) { section.hidden = true; return; }
+        const data = await res.json();
+        if (!data.text) { section.hidden = true; return; }
+        section.querySelector('.insight-body').textContent = data.text;
+        section.querySelector('.insight-meta').textContent = `generated ${formatTimeAgo(data.generatedAt)}`;
+        section.hidden = false;
+      } catch {
+        section.hidden = true;
+      }
+    }
+
     async function refresh() {
       try {
         const records = await loadMetrics();
@@ -148,7 +181,8 @@
 
     buildCards(METRICS, document.querySelector('.charts'));
     refresh();
-    setInterval(refresh, REFRESH_INTERVAL_MS);
+    loadInsight();
+    setInterval(() => { refresh(); loadInsight(); }, REFRESH_INTERVAL_MS);
   </script>
 </body>
 </html>

@@ -1,5 +1,6 @@
 using Railengine;
 using RailenginePoweredStatusPage.Middleware;
+using RailenginePoweredStatusPage.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,8 @@ builder.Services.AddSingleton<RailengineClient>(sp =>
     var pat = config["RailEngine:PAT"]!;
     return new RailengineClient(httpClient, pat);
 });
+builder.Services.AddSingleton<DailyInsight>();
+builder.Services.AddHostedService<DailyInsightService>();
 
 var app = builder.Build();
 

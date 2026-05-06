@@ -44,6 +44,16 @@ Each entry:
 
 Cards are generated from this list at page load, so adding, removing, renaming, or recoloring a metric is a one-line change. The page title and `<h1>` heading are still hardcoded in `wwwroot/index.html` if you want to rebrand those too.
 
+## Daily insight (optional)
+
+If an `Anthropic:ApiKey` is configured, the app runs a `BackgroundService` that wakes once every 24 hours, calls the Claude API with the engine's [Railengine MCP server](https://cndr.railtown.ai/api/mcp/engine/{EngineId}) attached as a tool source, and asks Claude to review the recent metric data. The result is exposed at `/api/insight` and rendered as a "Daily Insight" card above the charts, with a "generated Xh ago" timestamp.
+
+This demonstrates Claude autonomously deciding which Railengine tools to call (`getEngineStorageDocuments`, `searchEngineDocuments`, …) and reasoning over the results — useful as a worked example of the MCP client beta in C#. The same PAT used for the SDK is forwarded as the MCP server's bearer token.
+
+If `Anthropic:ApiKey` is not set, the service logs a notice and exits cleanly; the insight card simply doesn't appear.
+
+> **Heads-up for local development:** the 24-hour timer is in-memory only, so each app restart triggers a fresh generation and a corresponding Anthropic API call. If you're iterating on the app you may want to comment out `AddHostedService<DailyInsightService>()` in `Program.cs` until you're ready to test it. Once deployed to a long-running host, restarts are rare and this isn't a concern.
+
 ## Configuration
 
 ### IP allowlist
@@ -62,8 +72,9 @@ The default permits localhost only. Add the IP addresses of any machines that sh
 
 1. Copy `appsettings.Development.sample.json` to `appsettings.Development.json`
 2. Fill in your Railengine PAT and engine ID
-3. Add any additional IP addresses to `AllowedIPs` as needed
-4. Run the app:
+3. (Optional) Set `Anthropic:ApiKey` to enable the daily insight card
+4. Add any additional IP addresses to `AllowedIPs` as needed
+5. Run the app:
 
 ```bash
 dotnet run
