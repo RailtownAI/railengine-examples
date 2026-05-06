@@ -1,10 +1,10 @@
 # Railengine samples that use the C# SDK
 
-This folder contains C# / .NET examples that use the [Railengine](https://railengine.ai) SDK. The SDK is published on NuGet and works in any .NET 8+ application.
+This folder contains C# / .NET examples that use the [Railengine](https://railengine.ai) SDK. The SDK targets **.NET Standard 2.0**, so it can be consumed from any compatible runtime (.NET Framework 4.6.1+, .NET Core 2.0+, .NET 5+, etc.). The sample apps in this folder target **.NET 8**.
 
 ## Prerequisites
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download) or later
+- [.NET 8 SDK](https://dotnet.microsoft.com/download) (required to build and run the samples; the SDK itself only requires a .NET Standard 2.0–compatible runtime)
 - A free [Railengine](https://railengine.ai) account
 
 ## Set up Railengine
