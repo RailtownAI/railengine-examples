@@ -22,6 +22,7 @@ type Props = {
   onIngested: () => void | Promise<void>;
 };
 
+
 export function ExpenseConfirmDialog({
   open,
   onOpenChange,
