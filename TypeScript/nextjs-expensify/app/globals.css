@@ -1,3 +1,4 @@
+/* stylelint-disable-next-line import-notation */
 @import "tailwindcss";
 
 /* stylelint-disable at-rule-no-unknown */
@@ -6,7 +7,6 @@
 /* stylelint-enable at-rule-no-unknown */
 
 @layer base {
-
   /* Light: forest green palette — mint wash background, deep pine text & CTAs */
   :root {
     --background: 142 32% 96%;
