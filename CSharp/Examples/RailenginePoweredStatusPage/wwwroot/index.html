@@ -37,10 +37,12 @@
     //                whose value matches the previous one. Useful for metrics that
     //                report constantly and you only want to highlight changes.
     const METRICS = [
-      { key: 'engine-load',    label: 'Railengine',           unit: 'bytes/min',     color: '#6366f1', interval: '12h' },
-      { key: 'team-members',  label: 'Users',                unit: 'users',         color: '#22d3ee', interval: '12h', hideRepeats: true },
+      { key: 'engine-count', label: 'Railengines', unit: 'engines', color: '#ce49ff', interval: '12h', hideRepeats: true },
+      { key: 'engine-load', label: 'Railengine Load', unit: 'bytes/min', color: '#6366f1', interval: '12h' },
+      { key: 'team-members', label: 'Conductr Users',                unit: 'users',         color: '#22d3ee', interval: '12h', hideRepeats: true },
       { key: 'logs',          label: 'Conductr Logs',        unit: 'logs/min',      color: '#34d399', interval: '12h' },
-      { key: 'pypi-downloads', label: 'railtracks Downloads', unit: 'downloads/day', color: '#f59e0b', interval: '30d' },
+      { key: 'pypi-downloads', label: 'Railtracks Downloads', unit: 'downloads/day', color: '#f59e0b', interval: '30d' },
+      { key: 'agent-run-count', label: 'Railtracks Runs', unit: 'runs', color: '#7f0000', interval: '12h' },
     ];
 
     const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
