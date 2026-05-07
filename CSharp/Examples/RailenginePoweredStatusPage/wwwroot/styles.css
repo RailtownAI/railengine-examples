@@ -93,6 +93,13 @@ h1 {
   color: #f8fafc;
 }
 
+.card-interval {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: -0.5rem;
+  margin-bottom: 0.75rem;
+}
+
 .chart-wrap {
   position: relative;
   height: 220px;

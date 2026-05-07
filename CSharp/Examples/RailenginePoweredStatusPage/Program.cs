@@ -15,6 +15,7 @@ builder.Services.AddSingleton<RailengineClient>(sp =>
 });
 builder.Services.AddSingleton<DailyInsight>();
 builder.Services.AddHostedService<DailyInsightService>();
+builder.Services.AddTransient<IExternalMetricSource, PyPiDownloadsSource>();
 
 var app = builder.Build();
 

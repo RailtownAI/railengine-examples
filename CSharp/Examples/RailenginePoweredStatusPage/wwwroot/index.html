@@ -37,9 +37,10 @@
     //                whose value matches the previous one. Useful for metrics that
     //                report constantly and you only want to highlight changes.
     const METRICS = [
-      { key: 'engine-load',  label: 'Railengine',    unit: 'bytes/min', color: '#6366f1' },
-      { key: 'team-members', label: 'Users',         unit: 'users',     color: '#22d3ee', hideRepeats: true },
-      { key: 'logs',         label: 'Conductr Logs', unit: 'logs/min',  color: '#34d399' },
+      { key: 'engine-load',    label: 'Railengine',           unit: 'bytes/min',     color: '#6366f1', interval: '12h' },
+      { key: 'team-members',  label: 'Users',                unit: 'users',         color: '#22d3ee', interval: '12h', hideRepeats: true },
+      { key: 'logs',          label: 'Conductr Logs',        unit: 'logs/min',      color: '#34d399', interval: '12h' },
+      { key: 'pypi-downloads', label: 'railtracks Downloads', unit: 'downloads/day', color: '#f59e0b', interval: '30d' },
     ];
 
     const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
@@ -55,12 +56,16 @@
         latest.className = 'latest';
         heading.append(latest);
 
+        const intervalEl = document.createElement('p');
+        intervalEl.className = 'card-interval';
+        intervalEl.textContent = metric.interval ?? '';
+
         const wrap = document.createElement('div');
         wrap.className = 'chart-wrap';
         const canvas = document.createElement('canvas');
         wrap.append(canvas);
 
-        card.append(heading, wrap);
+        card.append(heading, intervalEl, wrap);
         container.append(card);
 
         metric.latestEl = latest;
@@ -105,8 +110,8 @@
           maintainAspectRatio: false,
           plugins: { legend: { display: false } },
           scales: {
-            x: { ticks: { color: '#64748b' }, grid: { color: '#2d3248' } },
-            y: { ticks: { color: '#64748b' }, grid: { color: '#2d3248' } },
+            x: { ticks: { color: '#94a3b8' }, grid: { color: '#3a4060' } },
+            y: { ticks: { color: '#94a3b8' }, grid: { color: '#3a4060' } },
           },
         },
       });
