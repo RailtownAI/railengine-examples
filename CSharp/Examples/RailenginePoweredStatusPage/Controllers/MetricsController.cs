@@ -28,6 +28,7 @@ public class MetricsController : ControllerBase
 
         var railengineRecords = page1.Items.Concat(page2.Items)
             .Select(i => i.Document)
+            .Where(r => r.Timestamp.HasValue && r.Value.HasValue)
             .OrderByDescending(r => r.Timestamp)
             .Take(144);
 

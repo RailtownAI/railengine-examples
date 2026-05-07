@@ -8,8 +8,8 @@ public class MetricRecord
     public string Metric { get; set; } = string.Empty;
 
     [JsonPropertyName("timestamp")]
-    public long Timestamp { get; set; }
+    public long? Timestamp { get; set; }
 
     [JsonPropertyName("value")]
-    public double Value { get; set; }
+    public double? Value { get; set; }
 }
