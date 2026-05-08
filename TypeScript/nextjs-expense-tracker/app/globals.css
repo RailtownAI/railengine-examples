@@ -30,6 +30,7 @@
     --ring: 152 45% 32%;
     --radius: 0.5rem;
   }
+
   /* Dark: deep evergreen (still optional via theme toggle) */
   .dark {
     --background: 152 32% 9%;
