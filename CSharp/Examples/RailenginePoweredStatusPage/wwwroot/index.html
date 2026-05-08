@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>railtown.ai system metrics</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <h1>railtown.ai system metrics</h1>
+
+  <section class="insight" hidden>
+    <h2>Daily Insight <span class="insight-meta"></span></h2>
+    <p class="insight-body"></p>
+  </section>
+
+  <div class="charts"></div>
+
+  <p id="error" class="error" hidden></p>
+
+  <footer class="powered-by">
+    <span>Powered by</span>
+    <a href="https://railengine.ai/" target="_blank" rel="noopener noreferrer">
+      <img src="cropped-Railengine_logo_dark-1-scaled-1-2048x585.png" alt="Railengine" />
+    </a>
+  </footer>
+
+  <script>
+    // To adapt this status page, edit only this list. Add, remove, rename,
+    // or recolor metrics here — the cards render automatically from it.
+    //   key:         matches the `metric` field on records returned by /api/metrics
+    //   label:       shown as the card header
+    //   unit:        appended after the latest reading
+    //   color:       line + fill color (any CSS color)
+    //   hideRepeats: optional. When true, point markers are suppressed for samples
+    //                whose value matches the previous one. Useful for metrics that
+    //                report constantly and you only want to highlight changes.
+    const METRICS = [
+      { key: 'engine-count', label: 'Railengines', unit: 'engines', color: '#ce49ff', interval: '12h', hideRepeats: true },
+      { key: 'engine-load', label: 'Railengine Load', unit: 'bytes/min', color: '#6366f1', interval: '12h' },
+      { key: 'team-members', label: 'Conductr Users',                unit: 'users',         color: '#22d3ee', interval: '12h', hideRepeats: true },
+      { key: 'logs',          label: 'Conductr Logs',        unit: 'logs/min',      color: '#34d399', interval: '12h' },
+      { key: 'pypi-downloads', label: 'Railtracks Downloads', unit: 'downloads/day', color: '#f59e0b', interval: '30d' },
+      { key: 'agent-run-count', label: 'Railtracks Runs', unit: 'runs', color: '#7f0000', interval: '12h' },
+    ];
+
+    const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
+
+    function buildCards(metrics, container) {
+      for (const metric of metrics) {
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        const heading = document.createElement('h2');
+        heading.append(metric.label);
+        const latest = document.createElement('span');
+        latest.className = 'latest';
+        heading.append(latest);
+
+        const intervalEl = document.createElement('p');
+        intervalEl.className = 'card-interval';
+        intervalEl.textContent = metric.interval ?? '';
+
+        const wrap = document.createElement('div');
+        wrap.className = 'chart-wrap';
+        const canvas = document.createElement('canvas');
+        wrap.append(canvas);
+
+        card.append(heading, intervalEl, wrap);
+        container.append(card);
+
+        metric.latestEl = latest;
+        metric.canvas = canvas;
+      }
+    }
+
+    function formatTimestamp(ms) {
+      return new Date(ms).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+    }
+
+    function formatLatest(value, unit) {
+      return `${value.toFixed(2).replace(/\.00$/, '')} ${unit}`;
+    }
+
+    function buildChart(canvas, labels, values, color, hideRepeats) {
+      const pointRadius = hideRepeats
+        ? ctx => {
+            const data = ctx.dataset.data;
+            const i = ctx.dataIndex;
+            return i > 0 && data[i] === data[i - 1] ? 0 : 4;
+          }
+        : 4;
+
+      return new Chart(canvas.getContext('2d'), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            data: values,
+            borderColor: color,
+            backgroundColor: color + '22',
+            borderWidth: 2,
+            pointRadius,
+            pointHoverRadius: 6,
+            fill: true,
+            tension: 0.3,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: '#94a3b8' }, grid: { color: '#3a4060' } },
+            y: { ticks: { color: '#94a3b8' }, grid: { color: '#3a4060' } },
+          },
+        },
+      });
+    }
+
+    async function loadMetrics() {
+      const res = await fetch('/api/metrics');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    }
+
+    function formatTimeAgo(iso) {
+      if (!iso) return '';
+      const ms = Date.now() - new Date(iso).getTime();
+      const minutes = Math.floor(ms / 60000);
+      if (minutes < 1) return 'just now';
+      if (minutes < 60) return `${minutes}m ago`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `${hours}h ago`;
+      const days = Math.floor(hours / 24);
+      return `${days}d ago`;
+    }
+
+    async function loadInsight() {
+      const section = document.querySelector('.insight');
+      try {
+        const res = await fetch('/api/insight');
+        if (!res.ok) { section.hidden = true; return; }
+        const data = await res.json();
+        if (!data.text) { section.hidden = true; return; }
+        section.querySelector('.insight-body').textContent = data.text;
+        section.querySelector('.insight-meta').textContent = `generated ${formatTimeAgo(data.generatedAt)}`;
+        section.hidden = false;
+      } catch {
+        section.hidden = true;
+      }
+    }
+
+    async function refresh() {
+      try {
+        const records = await loadMetrics();
+
+        document.getElementById('error').hidden = true;
+        document.querySelector('.charts').hidden = false;
+
+        for (const metric of METRICS) {
+          const subset = records
+            .filter(r => r.metric === metric.key)
+            .sort((a, b) => a.timestamp - b.timestamp);
+
+          const labels = subset.map(r => formatTimestamp(r.timestamp));
+          const values = subset.map(r => r.value);
+
+          const latest = values.length ? values[values.length - 1] : 0;
+          metric.latestEl.textContent = formatLatest(latest, metric.unit);
+
+          if (metric.chart) {
+            metric.chart.data.labels = labels;
+            metric.chart.data.datasets[0].data = values;
+            metric.chart.update();
+          } else {
+            metric.chart = buildChart(metric.canvas, labels, values, metric.color, metric.hideRepeats);
+          }
+        }
+      } catch (err) {
+        document.querySelector('.charts').hidden = true;
+        const el = document.getElementById('error');
+        el.textContent = `Failed to load metrics: ${err.message}`;
+        el.hidden = false;
+      }
+    }
+
+    buildCards(METRICS, document.querySelector('.charts'));
+    refresh();
+    loadInsight();
+    setInterval(() => { refresh(); loadInsight(); }, REFRESH_INTERVAL_MS);
+  </script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, sans-serif;
+  background: #0f1117;
+  color: #e2e8f0;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #f8fafc;
+}
+
+.insight {
+  background: #1e2130;
+  border: 1px solid #2d3248;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.insight h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+  margin-bottom: 0.75rem;
+}
+
+.insight-meta {
+  font-size: 0.75rem;
+  text-transform: none;
+  letter-spacing: 0;
+  color: #64748b;
+  font-weight: 400;
+}
+
+.insight-body {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #e2e8f0;
+  white-space: pre-wrap;
+}
+
+.charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 1.5rem;
+}
+
+.charts[hidden] {
+  display: none;
+}
+
+.card {
+  background: #1e2130;
+  border: 1px solid #2d3248;
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.card h2 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+  margin-bottom: 1rem;
+}
+
+.card h2 .latest {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: #f8fafc;
+}
+
+.card-interval {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: -0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.chart-wrap {
+  position: relative;
+  height: 220px;
+}
+
+.error {
+  color: #f87171;
+  font-size: 0.875rem;
+  margin-top: 1rem;
+}
+
+.powered-by {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-top: 1rem;
+  color: #ccc;
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+}
+
+.powered-by img {
+  height: 2.8rem;
+  width: auto;
+  display: block;
+  background: #e2e8f0;
+  border-radius: 6px;
+}
