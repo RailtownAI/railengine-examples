@@ -39,3 +39,10 @@ class TriageService:
         if hasattr(result, "model_dump"):
             return TriageAssessment.model_validate(result.model_dump())
         raise TypeError(f"Unexpected agent result type: {type(result)}")
+
+    async def run_batch(self, tickets: list[SupportTicket]) -> dict[str, TriageAssessment]:
+        """Triage each ticket sequentially (one agent run per ticket)."""
+        results: dict[str, TriageAssessment] = {}
+        for ticket in tickets:
+            results[ticket.id] = await self.run(ticket)
+        return results

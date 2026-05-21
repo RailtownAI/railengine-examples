@@ -13,9 +13,12 @@ from customer_support.models.ticket import (
     TicketStatus,
     SupportTicket,
 )
+from customer_support.models.triage import TriageAssessment
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 FIXTURES_DIR = PROJECT_ROOT / "fixtures" / "tickets"
+
+PRIORITY_ORDER = {"p1": 0, "p2": 1, "p3": 2, "p4": 3}
 
 
 def env_ok() -> dict[str, bool]:
@@ -129,3 +132,23 @@ def render_kanban_ticket_card(
     if selected != ticket.status:
         return selected
     return None
+
+
+def render_triage_assessment(ticket: SupportTicket, assessment: TriageAssessment) -> None:
+    """Display structured triage output for a single ticket."""
+    with st.container(border=True):
+        st.markdown(f"**{ticket.subject}**")
+        st.caption(f"`{ticket.id}` · queue status: **{ticket.status}**")
+        m1, m2 = st.columns(2)
+        m1.metric("Priority", assessment.priority.upper())
+        m2.metric("Category", assessment.category)
+        st.markdown("**Why work on this**")
+        st.write(assessment.reasoning)
+        st.markdown("**Internal summary**")
+        st.write(assessment.internal_summary)
+        if assessment.similar_ticket_ids:
+            st.caption(f"Similar tickets: {', '.join(assessment.similar_ticket_ids)}")
+        with st.expander("Draft reply & full JSON"):
+            st.markdown("**Draft reply**")
+            st.write(assessment.draft_reply_to_customer)
+            st.json(assessment.model_dump())

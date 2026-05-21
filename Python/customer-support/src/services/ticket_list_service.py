@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from customer_support.models import TicketPage
+from customer_support.models import SupportTicket, TicketPage
 from customer_support.repositories import TicketRepository
 
 
@@ -16,5 +16,10 @@ class TicketListService:
         return await self._repo.list_page(page_number=page_number, page_size=page_size)
 
     async def fetch_all(self, *, page_size: int = 100) -> list[SupportTicket]:
-        """Full storage snapshot for Kanban (paginated internally)."""
+        """Full storage snapshot (paginated internally)."""
         return await self._repo.list_all(page_size=page_size)
+
+    async def fetch_open_and_pending(self, *, page_size: int = 100) -> list[SupportTicket]:
+        """Tickets in ``open`` or ``pending`` status for the triage queue."""
+        tickets = await self.fetch_all(page_size=page_size)
+        return [t for t in tickets if t.status in ("open", "pending")]

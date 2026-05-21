@@ -25,7 +25,7 @@ uv run streamlit run src/streamlit_app.py
 1. Open **Ingest**, load **`fixtures/tickets/ticket_001.json`**, and click **Ingest to Railengine**.
 2. (Optional breadth) Seed the rest:
    `uv run support-ingest fixtures/tickets/resolved_*.json fixtures/tickets/pending_001.json fixtures/tickets/ticket_002.json`
-3. On **Ingest**, click **Run triage** and review priority + draft reply.
+3. On **Ingest**, click **Run triage** on a single ticket, or open **Triage Agent** → **Load queue** → **Triage queue** to prioritize all **open** and **pending** tickets.
 4. Switch to **Dashboard**, click **Refresh board**, and browse the Kanban. Click a **card subject** to open ticket details in a dialog; change status from the card **dropdown** (**requires `ENGINE_TOKEN`** alongside list credentials).
 
 ## CLI (optional)
@@ -58,7 +58,7 @@ If your engine masks sensitive fields after ingest, compare raw fixtures to stor
 - `src/services/` — ingest, list, triage use cases
 - `src/controllers/` — CLI + webhook only
 - `src/agents/` — Railtracks agent + tools
-- `src/pages/` — Streamlit Dashboard + Ingest scripts
+- `src/pages/` — Streamlit Dashboard, Ingest, and Triage Agent
 - [`src/streamlit_app.py`](src/streamlit_app.py) — navigation entry (importable as `customer_support.streamlit_app`)
 
 ## Local only
