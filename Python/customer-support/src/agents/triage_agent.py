@@ -6,12 +6,12 @@ import os
 
 import railtracks as rt
 
-from customer_support.models import TriageAssessment
-from customer_support.tools import (
+from customer_support.agents.tools import (
     get_ticket_by_id,
     list_recent_tickets,
     search_similar_tickets,
 )
+from customer_support.models import TriageAssessment
 
 
 def build_triage_agent():

@@ -1,105 +1,75 @@
-# Customer Support Triage Agent
+# Customer Support Triage
 
-Enterprise-style demo: **ingest** support tickets into [Railengine](https://railengine.ai/), **search** similar resolved cases (index + vector store), and **triage** a new ticket with a [Railtracks](https://github.com/RailtownAI/railtracks) agent that returns structured JSON (priority, summary, draft reply).
+Demo stack: ingest support tickets into [Railengine](https://railengine.ai/), search resolved history (keyword index + `VectorStore1`), and triage a case with [Railtracks](https://github.com/RailtownAI/railtracks) structured output (priority, category, summaries, draft reply).
 
-## Prerequisites
+## Before you start
 
-- Python **3.10+**
-- [uv](https://docs.astral.sh/uv/) (recommended) or pip + venv
-- A Railengine project with a new engine whose schema matches the sample document in [`engine-schema.json`](engine-schema.json) (copy-paste into the engine schema editor when creating the engine).
-- Enable **index** and **vector (VectorStore1)** on fields you want to search (e.g. `subject`, `body`, `tags`) in the Railengine console so `search_index` and `search_vector_store` return useful hits.
-- Optional: configure **PII masking** on the engine so emails, phone numbers, and `sk-…` style secrets in `body` / `customerEmail` are masked after ingest — compare raw fixtures vs. stored documents to show compliance-friendly data.
+- A [Railengine](https://railengine.ai/) account plus a **new engine** configured with the sample schema in [`engine-schema.json`](engine-schema.json).
+- Paste that schema into your engine schema editor so documents match **`SupportTicket`**.
+- Enable **Index** plus **VectorStore1** on fields such as `subject`, `body`, and `tags` in the Railengine console so search tools get useful hits beyond raw storage scans.
 
-## Setup
+## Quick start
 
-1. Copy environment template and add credentials from the Railengine dashboard:
-
-   ```bash
-   cd Python/customer-support
-   cp .env.example .env
-   ```
-
-   - `ENGINE_TOKEN` — for ingestion (`rail-engine-ingest`)
-   - `ENGINE_ID` + `ENGINE_PAT` — for retrieval/search (`rail-engine`)
-   - `OPENAI_API_KEY` — for the Railtracks OpenAI model in `agent.py`
-
-   **Note:** The ingest CLI does not import Railtracks (which wires `load_dotenv` on import), so this project calls `customer_support._env.ensure_dotenv_loaded()` at startup. That loads `Python/customer-support/.env` beside the package, then the current working directory, so `ENGINE_TOKEN` is available when you run `support-ingest`.
-
-2. Install dependencies:
-
-   ```bash
-   uv sync
-   ```
-
-   Or: `pip install -e .`
-
-## Seed tickets (fixtures)
-
-Ingest historical **resolved** tickets first, then open tickets (order only matters for your mental model — the agent searches by similarity):
-
-```bash
-uv run support-ingest fixtures/tickets/resolved_*.json fixtures/tickets/ticket_001.json fixtures/tickets/ticket_002.json
-```
-
-Or:
-
-```bash
-uv run python -m customer_support.ingest fixtures/tickets/*.json
-```
-
-## Run triage on one ticket
-
-```bash
-uv run python -m customer_support.triage --ticket fixtures/tickets/ticket_001.json
-```
-
-The agent calls Railengine-backed tools (`search_similar_tickets`, `list_recent_tickets`, `get_ticket_by_id`), then emits a **`TriageAssessment`** (priority, category, internal summary, draft reply, similar ticket ids).
-
-## Streamlit UI
-
-Local demo browser:
+From `Python/customer-support/`:
 
 ```bash
 cd Python/customer-support
+cp .env.example .env   # fill ENGINE_TOKEN, ENGINE_ID, ENGINE_PAT, OPENAI_API_KEY
 uv sync
-uv run streamlit run src/customer_support/streamlit_app.py
+uv run streamlit run src/streamlit_app.py
 ```
 
-- Metrics show whether **`ENGINE_TOKEN`**, **`ENGINE_PAT`**, **`ENGINE_ID`**, and **`OPENAI_API_KEY`** are set (values are never shown).
-- Sidebar: pick a **`fixtures/tickets/*.json`** file and click **Load into editor**.
-- **Ingest to Railengine** and **Run triage** use the same helpers as the CLIs (`ingest_ticket`, `triage_ticket`).
+## First demo flow
 
-**Do not expose this Streamlit server** on the public internet without authentication; it inherits the usual risks of forwarding API credentials through a prototype web app.
+1. Open **Ingest**, load **`fixtures/tickets/ticket_001.json`**, and click **Ingest to Railengine**.
+2. (Optional history) Seed resolved examples:
+   `uv run support-ingest fixtures/tickets/resolved_*.json`
+3. On **Ingest**, click **Run triage** and review priority + draft reply.
+4. Switch to **Dashboard**, click **Load / refresh**, and confirm the ticket row appears.
+
+## CLI (optional)
+
+```bash
+uv run support-ingest fixtures/tickets/*.json
+uv run support-triage --ticket fixtures/tickets/ticket_001.json
+```
+
+## Environment variables
+
+| Variable | Used for | Required when |
+|----------|-----------|---------------|
+| `ENGINE_TOKEN` | Ingest SDK | **Ingest** page / `support-ingest` |
+| `ENGINE_PAT` | Retrieval / list | **Dashboard** / triage tools |
+| `ENGINE_ID` | Engine routing | **Dashboard** / triage tools |
+| `OPENAI_API_KEY` | Railtracks LLM | **Run triage** |
+
+A local `.env` next to [`pyproject.toml`](pyproject.toml) is loaded automatically for CLIs and Streamlit.
+
+<details>
+<summary>Optional: PII masking</summary>
+
+If your engine masks sensitive fields after ingest, compare raw fixtures to stored docs in the dashboard to illustrate compliance-aware storage.</details>
+
+## Project layout
+
+- `src/models/` — Pydantic shapes (`customer_support.models` at import time)
+- `src/repositories/` — Railengine / ingest SDK I/O
+- `src/services/` — ingest, list, triage use cases
+- `src/controllers/` — CLI + webhook only
+- `src/agents/` — Railtracks agent + tools
+- `src/pages/` — Streamlit Dashboard + Ingest scripts
+- [`src/streamlit_app.py`](src/streamlit_app.py) — navigation entry (importable as `customer_support.streamlit_app`)
+
+## Local only
+
+Treat Streamlit like the CLI prototypes in this repo: **do not** expose it on the public internet with live credentials unless you add authentication and hardening yourself.
 
 ## Optional: webhook receiver
 
-To exercise **activate** (webhook publishing) locally:
+Activation / publishing smoke test:
 
 ```bash
-uv run python -m customer_support.webhook_receiver --port 8765
+uv run python -m customer_support.controllers.webhook --port 8765
 ```
 
-Configure the engine to POST to `http://<host>:8765/webhook`. Each event is parsed and printed as JSON (ticket id, subject, status).
-
-## Security note
-
-Treat this sample like other examples in this repo: **do not** expose `ENGINE_TOKEN`, `ENGINE_PAT`, or `OPENAI_API_KEY` on a public host without authentication and rate limits. Treat the Streamlit UI the same way as the CLI: keep it **local** or behind a VPN and access control.
-
-## Layout
-
-| Path | Purpose |
-|------|---------|
-| `engine-schema.json` | Sample document for engine schema setup |
-| `fixtures/tickets/` | JSON tickets with **synthetic** PII and a fake API key for masking demos |
-| `src/customer_support/models.py` | `SupportTicket`, `TriageAssessment` |
-| `src/customer_support/tools.py` | Railtracks `@function_node` tools using `rail-engine` |
-| `src/customer_support/agent.py` | Railtracks agent + structured output |
-| `src/customer_support/triage.py` | CLI entrypoint |
-| `src/customer_support/triage_runner.py` | Shared async `triage_ticket()` for CLI and UI |
-| `src/customer_support/ingest.py` | CLI + `ingest_ticket` helper |
-| `src/customer_support/streamlit_app.py` | Streamlit demo UI (ingest + triage) |
-| `src/customer_support/webhook_receiver.py` | Optional stdlib HTTP webhook |
-
-## Talk track (1 sentence)
-
-> “Tickets land in Railengine with masking and indexing; the Railtracks agent uses your engine as the **system of record** for similar cases and returns auditable structured triage.”
+POST to `http://127.0.0.1:8765/webhook` (tunnel with ngrok if you need a public URL).

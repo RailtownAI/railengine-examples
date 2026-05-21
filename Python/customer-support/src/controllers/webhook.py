@@ -1,13 +1,13 @@
 """
 Optional local webhook receiver for Railengine publishing (activation demo).
 
-Run from this directory after installing the package::
+Run::
 
-    uv run python -m customer_support.webhook_receiver --port 8765
+    uv run python -m customer_support.controllers.webhook --port 8765
 
 Point your engine webhook URL at http://localhost:8765/webhook (use ngrok or similar for a public URL).
 
-The handler parses `WebhookPublishingPayload` bodies using the same `SupportTicket` model as ingest.
+The handler parses `WebhookPublishingPayload` bodies using the same ``SupportTicket`` model as ingest.
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ from typing import Any
 
 from railtown.engine.ingest import WebhookHandler
 
-from customer_support._env import ensure_dotenv_loaded
+from customer_support.config.env import ensure_dotenv_loaded
 from customer_support.models import SupportTicket
 
 
@@ -35,9 +35,9 @@ class Handler(BaseHTTPRequestHandler):
             self.send_error(404, "Not Found")
             return
         length = int(self.headers.get("Content-Length", "0"))
-        raw = self.rfile.read(length).decode("utf-8", errors="replace")
+        raw_body = self.rfile.read(length).decode("utf-8", errors="replace")
         try:
-            payload: Any = json.loads(raw) if raw.strip() else {}
+            payload: Any = json.loads(raw_body) if raw_body.strip() else {}
         except json.JSONDecodeError:
             self.send_error(400, "Invalid JSON")
             return

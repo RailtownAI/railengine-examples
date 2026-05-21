@@ -1,4 +1,4 @@
-"""CLI: run Railtracks triage for one ticket fixture against live Railengine data."""
+"""CLI: run triage on one ticket fixture."""
 
 from __future__ import annotations
 
@@ -10,9 +10,9 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
-from customer_support._env import ensure_dotenv_loaded
+from customer_support.config.env import ensure_dotenv_loaded
 from customer_support.models import SupportTicket
-from customer_support.triage_runner import triage_ticket
+from customer_support.services.triage_service import TriageService
 
 
 def main_sync() -> None:
@@ -42,7 +42,7 @@ def main_sync() -> None:
         print(f"Invalid ticket JSON: {e}", file=sys.stderr)
         sys.exit(1)
 
-    assessment = asyncio.run(triage_ticket(ticket))
+    assessment = asyncio.run(TriageService().run(ticket))
     print(json.dumps(assessment.model_dump(), indent=2, ensure_ascii=False))
 
 

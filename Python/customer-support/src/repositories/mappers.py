@@ -1,8 +1,4 @@
-"""Normalize Railengine storage/search rows into ticket-shaped dicts.
-
-The HTTP API may expose user JSON under Body, body, content, or Content (string or object),
-matching patterns used elsewhere in railengine-examples TypeScript helpers.
-"""
+"""Map Railengine retrieval rows/documents -> SupportTicket models."""
 
 from __future__ import annotations
 
@@ -11,7 +7,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from customer_support.models import SupportTicket
+from customer_support.models.ticket import SupportTicket
 
 
 def _parse_json_if_string(raw: Any) -> Any:
@@ -45,7 +41,6 @@ def body_from_row(row: Any) -> dict[str, Any] | None:
     parsed = _parse_json_if_string(raw)
     if isinstance(parsed, dict):
         return parsed
-    # Row may already be the flat document (unlikely but tolerate)
     if "id" in d and "subject" in d:
         return dict(d)
     return None

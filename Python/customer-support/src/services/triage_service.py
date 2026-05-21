@@ -1,4 +1,4 @@
-"""Shared async triage runner for CLI and Streamlit."""
+"""Railtracks triage flow orchestration."""
 
 from __future__ import annotations
 
@@ -6,17 +6,15 @@ import json
 
 import railtracks as rt
 from railtracks.built_nodes.concrete.response import StructuredResponse
-from railtown.engine import Railengine
 
-from customer_support.agent import build_triage_agent
+from customer_support.agents.triage_agent import build_triage_agent
 from customer_support.models import SupportTicket, TriageAssessment
-from customer_support.runtime import set_railengine_client
 
 
-async def triage_ticket(ticket: SupportTicket) -> TriageAssessment:
-    """Run the Railtracks triage Flow against Railengine-backed tools."""
-    async with Railengine() as engine:
-        set_railengine_client(engine)
+class TriageService:
+    """Run the structured triage agent (tools use TicketRepository internally)."""
+
+    async def run(self, ticket: SupportTicket) -> TriageAssessment:
         agent_cls = build_triage_agent()
         flow = rt.Flow(name="CustomerSupportTriage", entry_point=agent_cls)
 
