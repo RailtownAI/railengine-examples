@@ -1,0 +1,11 @@
+{
+  "id": "ticket-pending-001",
+  "subject": "Awaiting billing approval for quota increase",
+  "body": "Customer requested doubling API quota pending finance sign-off on the purchase order.",
+  "status": "pending",
+  "tags": ["billing", "quota"],
+  "createdAt": "2026-05-21T09:00:00Z",
+  "customerEmail": "ops-lead@vendor.example",
+  "customerPhone": "",
+  "productArea": "billing"
+}

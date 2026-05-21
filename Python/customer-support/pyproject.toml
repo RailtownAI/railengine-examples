@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "customer-support-triage"
+version = "0.1.0"
+description = "Customer support triage demo: Railengine ingest + search + Railtracks agent"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "rail-engine>=0.2.1",
+    "rail-engine-ingest>=0.2.1",
+    "railtracks>=1.3.0",
+    "pydantic>=2.0",
+    "python-dotenv>=1.0.0",
+    "streamlit>=1.57.0",
+    "watchdog>=6.0.0",
+]
+
+[project.scripts]
+support-ingest = "customer_support.controllers.cli.ingest:main_sync"
+support-triage = "customer_support.controllers.cli.triage:main_sync"
+
+# Modules live directly under ``src/``; setuptools maps that tree to ``customer_support.*``.
+[tool.setuptools]
+package-dir = { "customer_support" = "src" }
+packages = [
+    "customer_support",
+    "customer_support.agents",
+    "customer_support.config",
+    "customer_support.controllers",
+    "customer_support.controllers.cli",
+    "customer_support.models",
+    "customer_support.pages",
+    "customer_support.repositories",
+    "customer_support.services",
+]
