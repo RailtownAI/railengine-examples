@@ -35,6 +35,19 @@ uv run support-ingest fixtures/tickets/*.json
 uv run support-triage --ticket fixtures/tickets/ticket_001.json
 ```
 
+## Debug and visualize the triage agent (optional)
+
+After you run triage once (Streamlit **Triage Agent** / **Ingest**, or `support-triage`), you can inspect agent runs in the Railtracks UI:
+
+```bash
+cd Python/customer-support
+pip install 'railtracks[visual]'
+railtracks update
+railtracks viz
+```
+
+Opens the local visualization app so you can debug tool calls, prompts, and structured output from the support triage flow.
+
 ## Environment variables
 
 | Variable | Used for | Required when |

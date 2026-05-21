@@ -22,7 +22,7 @@ def build_triage_agent():
             "OPENAI_API_KEY is not set. Add it to .env or export it before running triage."
         )
 
-    llm = rt.llm.OpenAILLM("gpt-4o")
+    llm = rt.llm.OpenAILLM("gpt-5.4")
 
     system = """You are an enterprise support triage lead. You receive a single support ticket (JSON).
 
