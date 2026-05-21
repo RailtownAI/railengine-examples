@@ -2,7 +2,7 @@
   "id": "ticket-open-002",
   "subject": "SSO fails after password rotation — error AADSTS50076",
   "body": "All users in our eu-west tenant see AADSTS50076 when signing in via SAML. Admin contact: it-lead@contoso.example. Mobile: +44 20 7946 0958. Happened right after we rotated IdP certs.",
-  "status": "open",
+  "status": "in_progress",
   "tags": ["auth", "sso", "azure-ad"],
   "createdAt": "2026-05-20T16:20:00Z",
   "customerEmail": "it-lead@contoso.example",

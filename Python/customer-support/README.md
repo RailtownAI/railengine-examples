@@ -6,6 +6,7 @@ Demo stack: ingest support tickets into [Railengine](https://railengine.ai/), se
 
 - A [Railengine](https://railengine.ai/) account plus a **new engine** configured with the sample schema in [`engine-schema.json`](engine-schema.json).
 - Paste that schema into your engine schema editor so documents match **`SupportTicket`**.
+- Allowed ticket **`status`** values when ingesting vs. validating in-app: **`pending`**, **`open`**, **`in_progress`**, **`resolved`** — update long-lived engine/schema rules if yours differ before re-ingesting fixtures.
 - Enable **Index** plus **VectorStore1** on fields such as `subject`, `body`, and `tags` in the Railengine console so search tools get useful hits beyond raw storage scans.
 
 ## Quick start
@@ -22,10 +23,10 @@ uv run streamlit run src/streamlit_app.py
 ## First demo flow
 
 1. Open **Ingest**, load **`fixtures/tickets/ticket_001.json`**, and click **Ingest to Railengine**.
-2. (Optional history) Seed resolved examples:
-   `uv run support-ingest fixtures/tickets/resolved_*.json`
+2. (Optional breadth) Seed the rest:
+   `uv run support-ingest fixtures/tickets/resolved_*.json fixtures/tickets/pending_001.json fixtures/tickets/ticket_002.json`
 3. On **Ingest**, click **Run triage** and review priority + draft reply.
-4. Switch to **Dashboard**, click **Load / refresh**, and confirm the ticket row appears.
+4. Switch to **Dashboard**, click **Refresh board**, and browse the Kanban (**Pending**, **Open**, **In Progress**, **Resolved**). Change status from each card’s **dropdown** (**requires `ENGINE_TOKEN`** alongside list credentials).
 
 ## CLI (optional)
 
@@ -38,7 +39,7 @@ uv run support-triage --ticket fixtures/tickets/ticket_001.json
 
 | Variable | Used for | Required when |
 |----------|-----------|---------------|
-| `ENGINE_TOKEN` | Ingest SDK | **Ingest** page / `support-ingest` |
+| `ENGINE_TOKEN` | Ingest SDK | **Ingest** page · `support-ingest` · **Kanban status** dropdown |
 | `ENGINE_PAT` | Retrieval / list | **Dashboard** / triage tools |
 | `ENGINE_ID` | Engine routing | **Dashboard** / triage tools |
 | `OPENAI_API_KEY` | Railtracks LLM | **Run triage** |

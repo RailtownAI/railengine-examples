@@ -60,6 +60,28 @@ class TicketRepository:
             page_size=getattr(page, "page_size", ps),
         )
 
+    async def list_all(self, *, page_size: int = 100) -> list[SupportTicket]:
+        """Walk every storage page in one Railengine session; return parsed tickets."""
+        capped = max(1, min(int(page_size), 100))
+        out: list[SupportTicket] = []
+        async with Railengine() as client:
+            pn = 1
+            while True:
+                page = await client.list_storage_documents(
+                    page_number=pn,
+                    page_size=capped,
+                    raw=True,
+                )
+                for row in page.items:
+                    t = ticket_from_row(row)
+                    if t:
+                        out.append(t)
+                total_pages = getattr(page, "total_pages", 0) or 0
+                if total_pages < 1 or pn >= total_pages:
+                    break
+                pn += 1
+        return out
+
     async def search_index_hits(self, query: str, limit: int) -> list[SupportTicket]:
         out: list[SupportTicket] = []
         async with Railengine() as client:

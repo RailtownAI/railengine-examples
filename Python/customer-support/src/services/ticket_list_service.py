@@ -14,3 +14,7 @@ class TicketListService:
 
     async def fetch_page(self, page_number: int = 1, page_size: int = 50) -> TicketPage:
         return await self._repo.list_page(page_number=page_number, page_size=page_size)
+
+    async def fetch_all(self, *, page_size: int = 100) -> list[SupportTicket]:
+        """Full storage snapshot for Kanban (paginated internally)."""
+        return await self._repo.list_all(page_size=page_size)

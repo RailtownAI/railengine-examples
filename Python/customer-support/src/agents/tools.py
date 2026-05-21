@@ -7,7 +7,7 @@ from typing import Any, Literal
 
 import railtracks as rt
 
-from customer_support.models import SupportTicket
+from customer_support.models.ticket import TICKET_STATUSES, SupportTicket
 from customer_support.repositories import TicketRepository
 from customer_support.repositories.mappers import ticket_from_row
 
@@ -59,14 +59,15 @@ async def list_recent_tickets(status: str = "resolved", limit: int = 15) -> str:
     List recent tickets from hot storage. Filter client-side by status.
 
     Args:
-        status: open | pending | resolved — only tickets matching this status are returned.
+        status: pending | open | in_progress | resolved — only matching tickets returned.
         limit: Max rows to return (JSONPath query when supported; otherwise capped scan).
     """
     repo = TicketRepository()
     want = status.strip().lower()
-    if want not in ("open", "pending", "resolved"):
+    valid = set(TICKET_STATUSES)
+    if want not in valid:
         return json.dumps(
-            {"error": "status must be open, pending, or resolved"},
+            {"error": "status must be pending, open, in_progress, or resolved"},
             indent=2,
         )
 
