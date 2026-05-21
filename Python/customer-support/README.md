@@ -26,7 +26,7 @@ uv run streamlit run src/streamlit_app.py
 2. (Optional breadth) Seed the rest:
    `uv run support-ingest fixtures/tickets/resolved_*.json fixtures/tickets/pending_001.json fixtures/tickets/ticket_002.json`
 3. On **Ingest**, click **Run triage** and review priority + draft reply.
-4. Switch to **Dashboard**, click **Refresh board**, and browse the Kanban (**Pending**, **Open**, **In Progress**, **Resolved**). Change status from each card’s **dropdown** (**requires `ENGINE_TOKEN`** alongside list credentials).
+4. Switch to **Dashboard**, click **Refresh board**, and browse the Kanban. Click a **card subject** to open ticket details in a dialog; change status from the card **dropdown** (**requires `ENGINE_TOKEN`** alongside list credentials).
 
 ## CLI (optional)
 
