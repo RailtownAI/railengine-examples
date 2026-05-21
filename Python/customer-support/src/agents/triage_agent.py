@@ -45,3 +45,33 @@ Rules:
         system_message=system,
         output_schema=TriageAssessment,
     )
+
+
+def build_triage_chat_agent():
+    """Conversational triage lead with the same Railengine tools (no structured output)."""
+    api_key = os.environ.get("OPENAI_API_KEY", "").strip()
+    if not api_key:
+        raise RuntimeError(
+            "OPENAI_API_KEY is not set. Add it to .env or export it before running triage."
+        )
+
+    llm = rt.llm.OpenAILLM("gpt-5.4")
+
+    system = """You are an enterprise support triage lead chatting with a human support manager.
+
+You help prioritize open and pending tickets, explain customer impact, and suggest next steps.
+Use search_similar_tickets, list_recent_tickets, and get_ticket_by_id when you need historical context from Railengine.
+Never paste API keys, tokens, or passwords — refer to them only as credentials mentioned in a ticket.
+Be concise and actionable. When comparing tickets, state priority rationale clearly (P1–P4 style).
+"""
+
+    return rt.agent_node(
+        "Support Triage Chat Agent",
+        tool_nodes=(
+            search_similar_tickets,
+            list_recent_tickets,
+            get_ticket_by_id,
+        ),
+        llm=llm,
+        system_message=system,
+    )
