@@ -1,1 +1,1 @@
-"""CLI/controller package."""
+"""Optional local controllers (e.g. webhook receiver)."""
