@@ -9,7 +9,6 @@ import railtracks as rt
 
 from customer_support.models.ticket import TICKET_STATUSES, SupportTicket
 from customer_support.repositories import TicketRepository
-from customer_support.repositories.mappers import ticket_from_row
 
 
 def _ticket_to_brief(t: SupportTicket) -> dict[str, Any]:
@@ -82,9 +81,8 @@ async def list_recent_tickets(status: str = "resolved", limit: int = 15) -> str:
     if len(collected) < cap:
         max_scan = 400
         seen_ids = {t.id for t in collected}
-        async for row in repo.iter_raw_storage_pages(page_size=100, max_docs=max_scan):
-            t = ticket_from_row(row)
-            if not t or t.status != want:
+        async for t in repo.iter_storage_tickets(page_size=100, max_docs=max_scan):
+            if t.status != want:
                 continue
             if t.id in seen_ids:
                 continue
@@ -116,9 +114,8 @@ async def get_ticket_by_id(ticket_id: str) -> str:
         if t.id == tid:
             return json.dumps(_ticket_to_brief(t), ensure_ascii=False, indent=2)
 
-    async for row in repo.iter_raw_storage_pages(page_size=100, max_docs=500):
-        t_row = ticket_from_row(row)
-        if t_row and t_row.id == tid:
-            return json.dumps(_ticket_to_brief(t_row), ensure_ascii=False, indent=2)
+    async for t in repo.iter_storage_tickets(page_size=100, max_docs=500):
+        if t.id == tid:
+            return json.dumps(_ticket_to_brief(t), ensure_ascii=False, indent=2)
 
     return json.dumps({"error": f"ticket not found: {tid}"}, indent=2)

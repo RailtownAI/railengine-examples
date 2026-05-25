@@ -11,7 +11,27 @@ from railtown.engine import Railengine
 from railtown.engine.ingest import RailengineIngest
 
 from customer_support.models import SupportTicket, TicketPage
-from customer_support.repositories.mappers import ticket_from_row
+
+
+def _as_ticket(item: Any) -> SupportTicket | None:
+    """Coerce SDK hits to ``SupportTicket`` (model instances or fallback dict parse)."""
+    if isinstance(item, SupportTicket):
+        return item
+    if isinstance(item, dict):
+        try:
+            return SupportTicket.model_validate(item)
+        except Exception:
+            return None
+    return None
+
+
+def _collect_tickets(items: list[Any]) -> list[SupportTicket]:
+    out: list[SupportTicket] = []
+    for item in items:
+        t = _as_ticket(item)
+        if t is not None:
+            out.append(t)
+    return out
 
 
 async def ingest_ticket_with_client(
@@ -43,18 +63,13 @@ class TicketRepository:
     async def list_page(self, page_number: int = 1, page_size: int = 100) -> TicketPage:
         capped = max(1, min(int(page_size), 100))
         ps = capped
-        async with Railengine() as client:
+        async with Railengine(model=SupportTicket) as client:
             page = await client.list_storage_documents(
                 page_number=page_number,
                 page_size=ps,
-                raw=True,
             )
 
-        tickets: list[SupportTicket] = []
-        for row in page.items:
-            t = ticket_from_row(row)
-            if t:
-                tickets.append(t)
+        tickets = _collect_tickets(page.items)
 
         return TicketPage(
             items=tickets,
@@ -68,18 +83,14 @@ class TicketRepository:
         """Walk every storage page in one Railengine session; return parsed tickets."""
         capped = max(1, min(int(page_size), 100))
         out: list[SupportTicket] = []
-        async with Railengine() as client:
+        async with Railengine(model=SupportTicket) as client:
             pn = 1
             while True:
                 page = await client.list_storage_documents(
                     page_number=pn,
                     page_size=capped,
-                    raw=True,
                 )
-                for row in page.items:
-                    t = ticket_from_row(row)
-                    if t:
-                        out.append(t)
+                out.extend(_collect_tickets(page.items))
                 total_pages = getattr(page, "total_pages", 0) or 0
                 if total_pages < 1 or pn >= total_pages:
                     break
@@ -88,11 +99,11 @@ class TicketRepository:
 
     async def search_index_hits(self, query: str, limit: int) -> list[SupportTicket]:
         out: list[SupportTicket] = []
-        async with Railengine() as client:
-            result = await client.search_index(query={"search": query}, raw=True)
-            for row in result.items:
-                t = ticket_from_row(row)
-                if t:
+        async with Railengine(model=SupportTicket) as client:
+            result = await client.search_index(query={"search": query}, raw=False)
+            for item in result.items:
+                t = _as_ticket(item)
+                if t is not None:
                     out.append(t)
                 if len(out) >= limit:
                     break
@@ -100,48 +111,44 @@ class TicketRepository:
 
     async def search_vector_hits(self, query: str, limit: int) -> list[SupportTicket]:
         out: list[SupportTicket] = []
-        async with Railengine() as client:
+        async with Railengine(model=SupportTicket) as client:
             items = await client.search_vector_store(
                 vector_store="VectorStore1",
                 query=query,
                 top=limit,
             )
-        for row in items:
-            t = ticket_from_row(row)
-            if t:
+        for item in items:
+            t = _as_ticket(item)
+            if t is not None:
                 out.append(t)
             if len(out) >= limit:
                 break
         return out
 
     async def query_jsonpath_tickets(self, jq: str) -> list[SupportTicket]:
-        async with Railengine() as client:
+        async with Railengine(model=SupportTicket) as client:
             page = await client.query_storage_by_jsonpath(json_path_query=jq)
-        collected: list[SupportTicket] = []
-        for row in page.items:
-            t = ticket_from_row(row)
-            if t:
-                collected.append(t)
-        return collected
+        return _collect_tickets(page.items)
 
-    async def iter_raw_storage_pages(
+    async def iter_storage_tickets(
         self,
         *,
         page_size: int,
         max_docs: int,
-    ) -> AsyncIterator[Any]:
-        """Yield raw rows until ``max_docs`` or pages exhausted (single session)."""
-        async with Railengine() as client:
+    ) -> AsyncIterator[SupportTicket]:
+        """Yield parsed tickets from storage pages until ``max_docs`` or pages exhausted."""
+        async with Railengine(model=SupportTicket) as client:
             scanned = 0
             pn = 1
             while scanned < max_docs:
                 page = await client.list_storage_documents(
                     page_number=pn,
                     page_size=page_size,
-                    raw=True,
                 )
-                for row in page.items:
-                    yield row
+                for item in page.items:
+                    t = _as_ticket(item)
+                    if t is not None:
+                        yield t
                     scanned += 1
                     if scanned >= max_docs:
                         return
