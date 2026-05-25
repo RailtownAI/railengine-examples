@@ -23,6 +23,6 @@ class IngestService:
         updated = ticket.model_copy(update={"status": status})
         return await self._repo.upsert(updated)
 
-    async def ingest_paths(self, paths: list[Path]) -> None:
+    async def ingest_paths(self, paths: list[Path]) -> list[tuple[str, int]]:
         """Batch-ingest fixture files (single ingest session)."""
-        await self._repo.ingest_paths(paths)
+        return await self._repo.ingest_paths(paths)

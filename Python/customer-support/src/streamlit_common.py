@@ -36,6 +36,124 @@ def fixture_paths() -> list[Path]:
     return sorted(FIXTURES_DIR.glob("*.json"))
 
 
+_PIPELINE_STAGES_HTML = """
+<style>
+  .re-pipeline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    width: 100%;
+    box-sizing: border-box;
+    gap: 0.15rem;
+    font-family: "Source Sans Pro", sans-serif;
+    font-size: 0.8rem;
+    margin: 0.25rem 0 0.5rem;
+  }
+  .re-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1 1 0;
+    min-width: 4.5rem;
+    text-align: center;
+  }
+  .re-icon {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    color: #fff;
+    margin-bottom: 0.35rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  }
+  .re-title { font-weight: 600; color: #31333f; line-height: 1.2; }
+  .re-sub { font-size: 0.68rem; color: #808495; line-height: 1.15; margin-top: 0.1rem; }
+  .re-arrow { color: #c4c4c4; font-size: 1.25rem; padding: 0 0.1rem; margin-bottom: 1.4rem; }
+  .re-stage.inactive .re-icon { background: #e8e8ed !important; color: #a3a3ac; }
+  .re-stage.inactive .re-title, .re-stage.inactive .re-sub { color: #a3a3ac; }
+</style>
+<div class="re-pipeline" role="img" aria-label="Railengine pipeline stages">
+  <div class="re-stage">
+    <div class="re-icon" style="background:#2563eb">📄</div>
+    <div class="re-title">Ingest</div>
+    <div class="re-sub">JSON Documents</div>
+  </div>
+  <div class="re-arrow">→</div>
+  <div class="re-stage">
+    <div class="re-icon" style="background:#9f1239">🎭</div>
+    <div class="re-title">Masking</div>
+    <div class="re-sub">Remove Sensitive Data</div>
+  </div>
+  <div class="re-arrow">→</div>
+  <div class="re-stage">
+    <div class="re-icon" style="background:#0284c7">📦</div>
+    <div class="re-title">Cold Storage</div>
+    <div class="re-sub">Backup Data</div>
+  </div>
+  <div class="re-arrow">→</div>
+  <div class="re-stage">
+    <div class="re-icon" style="background:#7c3aed">🔗</div>
+    <div class="re-title">Embedding</div>
+    <div class="re-sub">Vector Search</div>
+  </div>
+  <div class="re-arrow">→</div>
+  <div class="re-stage">
+    <div class="re-icon" style="background:#ca8a04">🔍</div>
+    <div class="re-title">Indexing</div>
+    <div class="re-sub">Text Search</div>
+  </div>
+  <div class="re-arrow">→</div>
+  <div class="re-stage">
+    <div class="re-icon" style="background:#ea580c">🗄️</div>
+    <div class="re-title">Hot Storage</div>
+    <div class="re-sub">Retrieve Document</div>
+  </div>
+  <div class="re-arrow">→</div>
+  <div class="re-stage inactive">
+    <div class="re-icon">📣</div>
+    <div class="re-title">Publishing</div>
+    <div class="re-sub">Send notification</div>
+  </div>
+</div>
+"""
+
+
+_FULL_WIDTH_CSS = """
+<style>
+  section.main > div.block-container {
+    max-width: 100%;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+  div[data-testid="stHtml"] {
+    width: 100%;
+  }
+  div[data-testid="stHtml"] iframe {
+    width: 100% !important;
+  }
+</style>
+"""
+
+
+def use_full_width_layout() -> None:
+    """Expand main content to full viewport width (call once from app entry)."""
+    st.markdown(_FULL_WIDTH_CSS, unsafe_allow_html=True)
+
+
+def render_pipeline_stages() -> None:
+    """Railengine pipeline overview (HTML; works without Mermaid support)."""
+    st.markdown("#### Pipeline stages")
+    st.html(_PIPELINE_STAGES_HTML, width="stretch")
+    st.caption(
+        "This page sends JSON through **Ingest**. Triage agents search **Embedding** and "
+        "**Indexing**; the dashboard reads **Hot Storage**."
+    )
+
+
 def render_env_metrics(*, expanded: bool = False) -> None:
     """Env flags in a collapsed expander (values never shown)."""
     with st.expander("Environment variables", expanded=expanded):

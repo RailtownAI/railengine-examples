@@ -29,14 +29,16 @@ class TicketRepository:
         async with RailengineIngest(model=SupportTicket) as client:
             return await ingest_ticket_with_client(client, ticket)
 
-    async def ingest_paths(self, paths: list[Path]) -> None:
+    async def ingest_paths(self, paths: list[Path]) -> list[tuple[str, int]]:
         """Batch ingest preserving a single ingest session."""
+        results: list[tuple[str, int]] = []
         async with RailengineIngest(model=SupportTicket) as client:
             for path in paths:
                 raw = json.loads(path.read_text(encoding="utf-8"))
                 ticket = SupportTicket.model_validate(raw)
                 status = await ingest_ticket_with_client(client, ticket)
-                print(f"Ingested {path.name} -> HTTP {status}")
+                results.append((path.name, status))
+        return results
 
     async def list_page(self, page_number: int = 1, page_size: int = 100) -> TicketPage:
         capped = max(1, min(int(page_size), 100))

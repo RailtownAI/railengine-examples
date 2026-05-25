@@ -17,6 +17,7 @@ from customer_support.streamlit_common import (
     env_ok,
     fixture_paths,
     render_env_metrics,
+    render_pipeline_stages,
 )
 
 
@@ -24,6 +25,8 @@ st.title("Ingest")
 st.caption(
     "Edit ticket JSON, send to Railengine, or run structured triage with Railtracks."
 )
+
+render_pipeline_stages()
 
 render_env_metrics()
 
@@ -43,6 +46,21 @@ if fixture_names:
         text = (FIXTURES_DIR / pick).read_text(encoding="utf-8")
         st.session_state.ticket_editor = text
         st.rerun()
+    if sidebar.button(
+        "Seed all fixtures",
+        type="secondary",
+        disabled=not status["ENGINE_TOKEN"],
+        help="Ingest every `fixtures/tickets/*.json` (requires ENGINE_TOKEN).",
+    ):
+        try:
+            with st.spinner(f"Ingesting {len(fixtures)} fixture(s)…"):
+                results = asyncio.run(IngestService().ingest_paths(fixtures))
+            st.sidebar.success(
+                f"Seeded **{len(results)}** file(s): "
+                + ", ".join(f"`{name}` ({code})" for name, code in results)
+            )
+        except Exception:
+            st.sidebar.error(traceback.format_exc())
 
 sidebar.caption(
     f"`fixtures/` path: `{FIXTURES_DIR}`"
@@ -54,6 +72,7 @@ txt = st.text_area(
     "Ticket JSON (`SupportTicket` schema)",
     height=340,
     key="ticket_editor",
+    width="stretch",
 )
 
 c1, c2 = st.columns(2)
