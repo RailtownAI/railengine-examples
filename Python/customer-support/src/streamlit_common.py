@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import base64
 import os
+import re
 from pathlib import Path
 
 import streamlit as st
@@ -17,8 +19,11 @@ from customer_support.models.triage import TriageAssessment
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 FIXTURES_DIR = PROJECT_ROOT / "fixtures" / "tickets"
+BRAND_LOGO_PATH = PROJECT_ROOT / "assets" / "logo-railengine.png"
 
 PRIORITY_ORDER = {"p1": 0, "p2": 1, "p3": 2, "p4": 3}
+
+TICKET_ID_PATTERN = re.compile(r"\b(ticket-[a-zA-Z0-9-]+)\b")
 
 
 def env_ok() -> dict[str, bool]:
@@ -144,6 +149,19 @@ def use_full_width_layout() -> None:
     st.markdown(_FULL_WIDTH_CSS, unsafe_allow_html=True)
 
 
+def render_page_brand() -> None:
+    """Clickable Railengine logo at the top of the main content area."""
+    if not BRAND_LOGO_PATH.is_file():
+        return
+    b64 = base64.b64encode(BRAND_LOGO_PATH.read_bytes()).decode()
+    st.markdown(
+        f'<a href="https://railengine.ai" target="_blank" rel="noopener">'
+        f'<img src="data:image/png;base64,{b64}" alt="Railengine" width="120" '
+        f'style="display:block;margin-bottom:0.25rem;"/></a>',
+        unsafe_allow_html=True,
+    )
+
+
 def render_pipeline_stages() -> None:
     """Railengine pipeline overview (HTML; works without Mermaid support)."""
     st.markdown("#### Pipeline stages")
@@ -154,13 +172,22 @@ def render_pipeline_stages() -> None:
     )
 
 
-def render_env_metrics(*, expanded: bool = False) -> None:
-    """Env flags in a collapsed expander (values never shown)."""
-    with st.expander("Environment variables", expanded=expanded):
-        status = env_ok()
-        cols = st.columns(4)
-        for i, (key, ok) in enumerate(status.items()):
-            cols[i].metric(label=key, value="set" if ok else "missing")
+@st.dialog("Config")
+def show_env_config_dialog() -> None:
+    """Modal: which env vars are set (values never shown)."""
+    st.caption("Loaded from `.env` next to `pyproject.toml`. Secret values are not displayed.")
+    status = env_ok()
+    cols = st.columns(4)
+    for i, (key, ok) in enumerate(status.items()):
+        cols[i].metric(label=key, value="set" if ok else "missing")
+
+
+def render_config_button() -> None:
+    """Top-right **Config** button opens the env status dialog."""
+    _, btn_col = st.columns([11, 1])
+    with btn_col:
+        if st.button("Config", type="secondary", use_container_width=True):
+            show_env_config_dialog()
 
 
 def group_tickets_by_status(
@@ -213,6 +240,63 @@ def show_ticket_details_dialog(ticket: SupportTicket) -> None:
         st.json(ticket.model_dump())
 
 
+_SUBJECT_BUTTON_LEFT_ALIGN_CSS = """
+<style>
+button[data-testid="baseButton-tertiary"] {
+    text-align: left !important;
+    justify-content: flex-start !important;
+}
+button[data-testid="baseButton-tertiary"] > div {
+    justify-content: flex-start !important;
+    width: 100%;
+}
+button[data-testid="baseButton-tertiary"] p {
+    text-align: left !important;
+    width: 100%;
+}
+</style>
+"""
+
+
+def render_chat_message_with_ticket_links(
+    content: str,
+    tickets_by_id: dict[str, SupportTicket],
+    *,
+    message_index: int,
+) -> None:
+    """Render assistant text; link ticket ids mentioned in the response."""
+    st.markdown(content)
+    mentioned = list(dict.fromkeys(TICKET_ID_PATTERN.findall(content)))
+    linked = [tid for tid in mentioned if tid in tickets_by_id]
+    if not linked:
+        return
+    st.caption("Tickets in this reply (click subject for details):")
+    for tid in linked:
+        render_ticket_subject_button(
+            tickets_by_id[tid],
+            key=f"chat_msg:{message_index}:{tid}",
+            left_align=True,
+        )
+
+
+def render_ticket_subject_button(
+    ticket: SupportTicket, *, key: str, left_align: bool = False
+) -> None:
+    """Tertiary button on the ticket subject; opens ``show_ticket_details_dialog``."""
+    if left_align and not st.session_state.get("_subject_button_left_align_css"):
+        st.session_state["_subject_button_left_align_css"] = True
+        st.markdown(_SUBJECT_BUTTON_LEFT_ALIGN_CSS, unsafe_allow_html=True)
+
+    subj = ticket.subject[:100] + ("…" if len(ticket.subject) > 100 else "")
+    if st.button(
+        subj,
+        key=key,
+        use_container_width=True,
+        type="tertiary",
+    ):
+        show_ticket_details_dialog(ticket)
+
+
 def render_kanban_ticket_card(
     ticket: SupportTicket,
     *,
@@ -227,14 +311,7 @@ def render_kanban_ticket_card(
     index = next(i for i, (_, s) in enumerate(KANBAN_COLUMNS) if s == ticket.status)
 
     with st.container(border=True):
-        subj = ticket.subject[:100] + ("…" if len(ticket.subject) > 100 else "")
-        if st.button(
-            subj,
-            key=f"view:{ticket.id}",
-            use_container_width=True,
-            type="tertiary",
-        ):
-            show_ticket_details_dialog(ticket)
+        render_ticket_subject_button(ticket, key=f"view:{ticket.id}")
         tags = ", ".join(ticket.tags[:6])
         st.caption(f"`{ticket.id}` · _{ticket.productArea}_ · {ticket.createdAt[:10]}")
         if tags:
@@ -259,7 +336,9 @@ def render_triage_assessment(
 ) -> None:
     """Display structured triage output for a single ticket."""
     with st.container(border=True):
-        st.markdown(f"**{ticket.subject}**")
+        render_ticket_subject_button(
+            ticket, key=f"triage_result_view:{ticket.id}", left_align=True
+        )
         st.caption(f"`{ticket.id}` · queue status: **{ticket.status}**")
         m1, m2 = st.columns(2)
         m1.metric("Priority", assessment.priority.upper())

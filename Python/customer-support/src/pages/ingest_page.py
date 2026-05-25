@@ -16,10 +16,11 @@ from customer_support.streamlit_common import (
     FIXTURES_DIR,
     env_ok,
     fixture_paths,
-    render_env_metrics,
+    render_page_brand,
     render_pipeline_stages,
 )
 
+render_page_brand()
 
 st.title("Ingest")
 st.caption(
@@ -27,8 +28,6 @@ st.caption(
 )
 
 render_pipeline_stages()
-
-render_env_metrics()
 
 status = env_ok()
 

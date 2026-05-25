@@ -24,19 +24,20 @@ uv run streamlit run src/streamlit_app.py
 
 1. Open **Ingest**, load **`fixtures/tickets/ticket_001.json`**, and click **Ingest to Railengine**.
 2. (Optional breadth) On **Ingest**, use sidebar **Seed all fixtures** to ingest every `fixtures/tickets/*.json`.
-3. On **Ingest**, click **Run triage** on a single ticket, or open **Triage Agent** → **Load queue** → **Triage queue** to prioritize all **open** and **pending** tickets.
+3. On **Ingest**, click **Run triage** on a single ticket, or open **Agent** → **Load queue** → **Triage all** for open and pending tickets.
 4. Switch to **Dashboard**, click **Refresh board**, and browse the Kanban. Click a **card subject** to open ticket details in a dialog; change status from the card **dropdown** (**requires `ENGINE_TOKEN`** alongside list credentials).
 
 ## Debug and visualize the triage agent (optional)
 
-After you run triage once (**Ingest** or **Triage Agent**), inspect agent runs in the Railtracks UI:
+After you run triage once (**Ingest** or **Agent**), inspect agent runs in the Railtracks UI:
 
 ```bash
 cd Python/customer-support
-pip install 'railtracks[visual]'
 railtracks update
 railtracks viz
 ```
+
+(`railtracks[visual]` is included in project dependencies; run `uv sync` if you have not already.)
 
 Opens the local visualization app so you can debug tool calls, prompts, and structured output from the support triage flow.
 
@@ -63,7 +64,7 @@ If your engine masks sensitive fields after ingest, compare raw fixtures to stor
 - `src/services/` — ingest, list, triage use cases
 - `src/controllers/` — optional webhook receiver
 - `src/agents/` — Railtracks agent + tools
-- `src/pages/` — Streamlit Dashboard, Ingest, and Triage Agent
+- `src/pages/` — Streamlit Dashboard, Ingest, and Agent
 - [`src/streamlit_app.py`](src/streamlit_app.py) — navigation entry (importable as `customer_support.streamlit_app`)
 
 ## Local only

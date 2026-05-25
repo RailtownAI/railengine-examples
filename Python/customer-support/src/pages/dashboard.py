@@ -13,18 +13,18 @@ from customer_support.services.ticket_list_service import TicketListService
 from customer_support.streamlit_common import (
     env_ok,
     group_tickets_by_status,
-    render_env_metrics,
     render_kanban_ticket_card,
+    render_page_brand,
 )
 
 _KANBAN_SESSION_KEY = "kanban_tickets"
+
+render_page_brand()
 
 st.title("Dashboard")
 st.caption(
     "Kanban sourced from **`list_storage_documents`** · moves persist via **ingest upsert**."
 )
-
-render_env_metrics()
 
 env = env_ok()
 list_ready = env["ENGINE_PAT"] and env["ENGINE_ID"]
