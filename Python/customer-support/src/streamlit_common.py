@@ -140,6 +140,32 @@ _FULL_WIDTH_CSS = """
   div[data-testid="stHtml"] iframe {
     width: 100% !important;
   }
+  /* Ticket subject buttons (tertiary): full width, left-aligned label */
+  section.main .element-container:has(button[data-testid="baseButton-tertiary"]) {
+    width: 100%;
+    align-self: stretch;
+  }
+  section.main div[data-testid="stButton"]:has(button[data-testid="baseButton-tertiary"]) {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-self: stretch;
+  }
+  section.main button[data-testid="baseButton-tertiary"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    text-align: left !important;
+    justify-content: flex-start !important;
+    padding-left: 0 !important;
+  }
+  section.main button[data-testid="baseButton-tertiary"] > div {
+    justify-content: flex-start !important;
+    width: 100%;
+  }
+  section.main button[data-testid="baseButton-tertiary"] p {
+    text-align: left !important;
+    width: 100%;
+  }
 </style>
 """
 
@@ -256,24 +282,6 @@ def show_ticket_details_dialog(ticket: SupportTicket) -> None:
         st.json(ticket.model_dump())
 
 
-_SUBJECT_BUTTON_LEFT_ALIGN_CSS = """
-<style>
-button[data-testid="baseButton-tertiary"] {
-    text-align: left !important;
-    justify-content: flex-start !important;
-}
-button[data-testid="baseButton-tertiary"] > div {
-    justify-content: flex-start !important;
-    width: 100%;
-}
-button[data-testid="baseButton-tertiary"] p {
-    text-align: left !important;
-    width: 100%;
-}
-</style>
-"""
-
-
 def render_chat_message_with_ticket_links(
     content: str,
     tickets_by_id: dict[str, SupportTicket],
@@ -291,23 +299,16 @@ def render_chat_message_with_ticket_links(
         render_ticket_subject_button(
             tickets_by_id[tid],
             key=f"chat_msg:{message_index}:{tid}",
-            left_align=True,
         )
 
 
-def render_ticket_subject_button(
-    ticket: SupportTicket, *, key: str, left_align: bool = False
-) -> None:
+def render_ticket_subject_button(ticket: SupportTicket, *, key: str) -> None:
     """Tertiary button on the ticket subject; opens ``show_ticket_details_dialog``."""
-    if left_align and not st.session_state.get("_subject_button_left_align_css"):
-        st.session_state["_subject_button_left_align_css"] = True
-        st.markdown(_SUBJECT_BUTTON_LEFT_ALIGN_CSS, unsafe_allow_html=True)
-
     subj = ticket.subject[:100] + ("…" if len(ticket.subject) > 100 else "")
     if st.button(
         f"🎫 {subj}",
         key=key,
-        use_container_width=True,
+        width="stretch",
         type="tertiary",
     ):
         show_ticket_details_dialog(ticket)
@@ -352,9 +353,7 @@ def render_triage_assessment(
 ) -> None:
     """Display structured triage output for a single ticket."""
     with st.container(border=True):
-        render_ticket_subject_button(
-            ticket, key=f"triage_result_view:{ticket.id}", left_align=True
-        )
+        render_ticket_subject_button(ticket, key=f"triage_result_view:{ticket.id}")
         st.caption(f"`{ticket.id}` · queue status: **{ticket.status}**")
         m1, m2 = st.columns(2)
         m1.metric("Priority", assessment.priority.upper())

@@ -214,9 +214,7 @@ with triage_col:
         st.subheader("Queue")
         st.caption(f"{len(queue)} ticket(s) (open or pending).")
         for ticket in queue:
-            render_ticket_subject_button(
-                ticket, key=f"queue_view:{ticket.id}", left_align=True
-            )
+            render_ticket_subject_button(ticket, key=f"queue_view:{ticket.id}")
             st.caption(f"`{ticket.id}` · **{ticket.status}** · {ticket.productArea}")
     else:
         st.info("Click **Load queue** to fetch open and pending tickets from storage.")
