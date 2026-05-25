@@ -56,7 +56,9 @@ if should_load:
         st.error(traceback.format_exc())
     else:
         if refresh:
-            st.success(f"Loaded **{len(st.session_state[_KANBAN_SESSION_KEY])}** tickets.")
+            st.success(
+                f"Loaded **{len(st.session_state[_KANBAN_SESSION_KEY])}** tickets."
+            )
 
 tickets: list[SupportTicket] = st.session_state[_KANBAN_SESSION_KEY]
 buckets = group_tickets_by_status(tickets)

@@ -26,7 +26,8 @@ render_app_toolbar()
 
 st.title("Ingest")
 st.caption(
-    "Edit ticket JSON, send to Railengine, or run structured triage with Railtracks. The Railengine is configured to do PII masking, vector embeddings, and full text search."
+    "Edit ticket JSON, send to Railengine, or run structured triage with Railtracks. "
+    "The Railengine is configured to do PII masking, vector embeddings, and full text search."
 )
 
 render_pipeline_stages()
