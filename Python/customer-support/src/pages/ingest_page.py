@@ -12,11 +12,18 @@ from pydantic import ValidationError
 from customer_support.models import SupportTicket, TriageAssessment
 from customer_support.services.ingest_service import IngestService
 from customer_support.services.triage_service import TriageService
-from customer_support.streamlit_common import FIXTURES_DIR, env_ok, fixture_paths, render_env_metrics
+from customer_support.streamlit_common import (
+    FIXTURES_DIR,
+    env_ok,
+    fixture_paths,
+    render_env_metrics,
+)
 
 
 st.title("Ingest")
-st.caption("Edit ticket JSON, send to Railengine, or run structured triage with Railtracks.")
+st.caption(
+    "Edit ticket JSON, send to Railengine, or run structured triage with Railtracks."
+)
 
 render_env_metrics()
 
@@ -71,10 +78,7 @@ with c1:
     )
 
 triage_ready = (
-    ticket
-    and status["ENGINE_PAT"]
-    and status["ENGINE_ID"]
-    and status["OPENAI_API_KEY"]
+    ticket and status["ENGINE_PAT"] and status["ENGINE_ID"] and status["OPENAI_API_KEY"]
 )
 
 with c2:
