@@ -8,7 +8,12 @@ from pydantic import BaseModel, Field
 
 TicketStatus = Literal["pending", "open", "in_progress", "resolved"]
 
-TICKET_STATUSES: tuple[TicketStatus, ...] = ("pending", "open", "in_progress", "resolved")
+TICKET_STATUSES: tuple[TicketStatus, ...] = (
+    "pending",
+    "open",
+    "in_progress",
+    "resolved",
+)
 
 KANBAN_COLUMNS: tuple[tuple[str, TicketStatus], ...] = (
     ("Pending", "pending"),
