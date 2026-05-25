@@ -91,7 +91,9 @@ with triage_col:
     if load_queue and list_ready:
         try:
             with st.spinner("Loading open and pending tickets…"):
-                st.session_state[_QUEUE_KEY] = asyncio.run(TicketListService().fetch_open_and_pending())
+                st.session_state[_QUEUE_KEY] = asyncio.run(
+                    TicketListService().fetch_open_and_pending()
+                )
         except Exception:
             st.error(traceback.format_exc())
         else:
@@ -110,7 +112,9 @@ with triage_col:
                 batch: dict[str, TriageAssessment] = {}
                 total = len(queue)
                 for i, ticket in enumerate(queue, start=1):
-                    progress.progress(i / total, text=f"Triage {i}/{total}: {ticket.id}")
+                    progress.progress(
+                        i / total, text=f"Triage {i}/{total}: {ticket.id}"
+                    )
                     batch[ticket.id] = await svc.run(ticket)
                 return batch
 
@@ -129,7 +133,9 @@ with triage_col:
             cols = st.columns([5, 1])
             with cols[0]:
                 st.markdown(f"**{ticket.subject}**")
-                st.caption(f"`{ticket.id}` · **{ticket.status}** · {ticket.productArea}")
+                st.caption(
+                    f"`{ticket.id}` · **{ticket.status}** · {ticket.productArea}"
+                )
             with cols[1]:
                 if st.button(
                     "Triage",
