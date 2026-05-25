@@ -18,10 +18,6 @@ dependencies = [
     "watchdog>=6.0.0",
 ]
 
-[project.scripts]
-support-ingest = "customer_support.controllers.cli.ingest:main_sync"
-support-triage = "customer_support.controllers.cli.triage:main_sync"
-
 # Modules live directly under ``src/``; setuptools maps that tree to ``customer_support.*``.
 [tool.setuptools]
 package-dir = { "customer_support" = "src" }
@@ -30,7 +26,6 @@ packages = [
     "customer_support.agents",
     "customer_support.config",
     "customer_support.controllers",
-    "customer_support.controllers.cli",
     "customer_support.models",
     "customer_support.pages",
     "customer_support.repositories",
