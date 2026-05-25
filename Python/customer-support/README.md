@@ -5,7 +5,7 @@ Demo stack: ingest support tickets into [Railengine](https://railengine.ai/), se
 ## Before you start
 
 - A [Railengine](https://railengine.ai/) account plus a **new engine** configured with the sample schema in [`engine-schema.json`](engine-schema.json).
-- Paste that schema into your engine schema editor so documents match **`SupportTicket`**.
+- Select that schema into your engine creation modal so documents match **`SupportTicket`**.
 - Allowed ticket **`status`** values when ingesting vs. validating in-app: **`pending`**, **`open`**, **`in_progress`**, **`resolved`** — update long-lived engine/schema rules if yours differ before re-ingesting fixtures.
 - Enable **Index** plus **VectorStore1** on fields such as `subject`, `body`, and `tags` in the Railengine console so search tools get useful hits beyond raw storage scans.
 
