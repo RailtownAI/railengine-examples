@@ -20,7 +20,9 @@ from customer_support.streamlit_common import (
 _KANBAN_SESSION_KEY = "kanban_tickets"
 
 st.title("Dashboard")
-st.caption("Kanban sourced from **`list_storage_documents`** · moves persist via **ingest upsert**.")
+st.caption(
+    "Kanban sourced from **`list_storage_documents`** · moves persist via **ingest upsert**."
+)
 
 render_env_metrics()
 
@@ -37,7 +39,9 @@ if not list_ready:
     )
 
 if not ingest_ready:
-    st.warning("Set **ENGINE_TOKEN** to change status from card dropdowns (updates use ingest upsert).")
+    st.warning(
+        "Set **ENGINE_TOKEN** to change status from card dropdowns (updates use ingest upsert)."
+    )
 
 toolbar = st.columns([2, 6])
 refresh = toolbar[0].button("Refresh board")
@@ -45,7 +49,9 @@ refresh = toolbar[0].button("Refresh board")
 if refresh and list_ready:
     try:
         with st.spinner("Loading tickets from storage…"):
-            st.session_state[_KANBAN_SESSION_KEY] = asyncio.run(TicketListService().fetch_all())
+            st.session_state[_KANBAN_SESSION_KEY] = asyncio.run(
+                TicketListService().fetch_all()
+            )
     except Exception:
         st.error(traceback.format_exc())
     else:
@@ -78,7 +84,9 @@ if move_hit is not None and ingest_ready:
         with st.spinner("Updating status…"):
             status_code = asyncio.run(svc.update_status(tk, dest))
         if list_ready:
-            st.session_state[_KANBAN_SESSION_KEY] = asyncio.run(TicketListService().fetch_all())
+            st.session_state[_KANBAN_SESSION_KEY] = asyncio.run(
+                TicketListService().fetch_all()
+            )
         else:
             st.session_state[_KANBAN_SESSION_KEY] = [
                 t.model_copy(update={"status": dest}) if t.id == tk.id else t
