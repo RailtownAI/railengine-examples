@@ -19,7 +19,9 @@ class TicketListService:
         """Full storage snapshot (paginated internally)."""
         return await self._repo.list_all(page_size=page_size)
 
-    async def fetch_open_and_pending(self, *, page_size: int = 100) -> list[SupportTicket]:
+    async def fetch_open_and_pending(
+        self, *, page_size: int = 100
+    ) -> list[SupportTicket]:
         """Tickets in ``open`` or ``pending`` status for the triage queue."""
         tickets = await self.fetch_all(page_size=page_size)
         return [t for t in tickets if t.status in ("open", "pending")]

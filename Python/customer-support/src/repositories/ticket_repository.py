@@ -14,7 +14,9 @@ from customer_support.models import SupportTicket, TicketPage
 from customer_support.repositories.mappers import ticket_from_row
 
 
-async def ingest_ticket_with_client(client: RailengineIngest, ticket: SupportTicket) -> int:
+async def ingest_ticket_with_client(
+    client: RailengineIngest, ticket: SupportTicket
+) -> int:
     """Upsert using an existing ingest client."""
     resp = await client.upsert(ticket)
     return resp.status_code

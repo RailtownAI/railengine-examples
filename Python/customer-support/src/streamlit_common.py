@@ -45,7 +45,9 @@ def render_env_metrics(*, expanded: bool = False) -> None:
             cols[i].metric(label=key, value="set" if ok else "missing")
 
 
-def group_tickets_by_status(tickets: list[SupportTicket]) -> dict[TicketStatus, list[SupportTicket]]:
+def group_tickets_by_status(
+    tickets: list[SupportTicket],
+) -> dict[TicketStatus, list[SupportTicket]]:
     buckets: dict[TicketStatus, list[SupportTicket]] = {s: [] for s in TICKET_STATUSES}
     for t in tickets:
         buckets[t.status].append(t)
@@ -134,7 +136,9 @@ def render_kanban_ticket_card(
     return None
 
 
-def render_triage_assessment(ticket: SupportTicket, assessment: TriageAssessment) -> None:
+def render_triage_assessment(
+    ticket: SupportTicket, assessment: TriageAssessment
+) -> None:
     """Display structured triage output for a single ticket."""
     with st.container(border=True):
         st.markdown(f"**{ticket.subject}**")

@@ -7,7 +7,10 @@ import json
 import railtracks as rt
 from railtracks.built_nodes.concrete.response import StructuredResponse
 
-from customer_support.agents.triage_agent import build_triage_agent, build_triage_chat_agent
+from customer_support.agents.triage_agent import (
+    build_triage_agent,
+    build_triage_chat_agent,
+)
 from customer_support.models import SupportTicket, TriageAssessment
 
 
@@ -51,7 +54,9 @@ class TriageService:
             return TriageAssessment.model_validate(result.model_dump())
         raise TypeError(f"Unexpected agent result type: {type(result)}")
 
-    async def run_batch(self, tickets: list[SupportTicket]) -> dict[str, TriageAssessment]:
+    async def run_batch(
+        self, tickets: list[SupportTicket]
+    ) -> dict[str, TriageAssessment]:
         """Triage each ticket sequentially (one agent run per ticket)."""
         results: dict[str, TriageAssessment] = {}
         for ticket in tickets:
