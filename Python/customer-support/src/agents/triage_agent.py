@@ -28,7 +28,8 @@ def build_triage_agent():
 
 Rules:
 - Use the search tools to find similar RESOLVED tickets before writing a reply.
-- Never copy API keys, tokens, or passwords into the draft_reply — refer to them only as "the credential mentioned in the ticket" if needed.
+- Never copy API keys, tokens, or passwords into the draft_reply — refer to them only as
+  "the credential mentioned in the ticket" if needed.
 - Prioritize customer impact and whether the issue blocks billing, security, or wide outages.
 - Populate similar_ticket_ids with ids you actually saw from tool results (may be empty if none).
 - Keep internal_summary factual and concise.
