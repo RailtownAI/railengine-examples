@@ -15,6 +15,7 @@ from customer_support.streamlit_common import (
     PRIORITY_ORDER,
     TICKET_ID_PATTERN,
     env_ok,
+    render_app_toolbar,
     render_chat_message_with_ticket_links,
     render_page_brand,
     render_ticket_subject_button,
@@ -29,19 +30,19 @@ _TICKET_CACHE_KEY = "agent_ticket_cache"
 # (button label, prompt sent to the agent)
 _EXAMPLE_CHAT_PROMPTS: tuple[tuple[str, str], ...] = (
     (
-        "Which ticket first?",
+        "🎯 Which ticket first?",
         "Which open or pending ticket should we handle first, and why?",
     ),
     (
-        "Similar billing issues",
+        "💳 Similar billing issues",
         "Search for similar resolved tickets related to billing portal or invoice errors.",
     ),
     (
-        "Summarize the queue",
+        "📋 Summarize the queue",
         "Summarize all open and pending tickets in the queue by customer impact and urgency.",
     ),
     (
-        "Highest-impact next steps",
+        "⚡ Highest-impact next steps",
         "What are the recommended next steps for the highest-impact open ticket?",
     ),
 )
@@ -49,9 +50,7 @@ _EXAMPLE_CHAT_PROMPTS: tuple[tuple[str, str], ...] = (
 
 def _ticket_lookup_base() -> dict[str, SupportTicket]:
     """Queue plus any tickets resolved from prior chat replies."""
-    lookup: dict[str, SupportTicket] = dict(
-        st.session_state.get(_TICKET_CACHE_KEY, {})
-    )
+    lookup: dict[str, SupportTicket] = dict(st.session_state.get(_TICKET_CACHE_KEY, {}))
     for ticket in st.session_state.get(_QUEUE_KEY, []):
         lookup[ticket.id] = ticket
     return lookup
@@ -73,9 +72,7 @@ async def _resolve_tickets_mentioned_in_text(
     return lookup
 
 
-def _submit_chat_turn(
-    prompt: str, queue_snapshot: list[SupportTicket] | None
-) -> None:
+def _submit_chat_turn(prompt: str, queue_snapshot: list[SupportTicket] | None) -> None:
     st.session_state[_CHAT_KEY].append({"role": "user", "content": prompt})
     try:
         with st.spinner("Agent thinking…"):
@@ -94,6 +91,7 @@ def _submit_chat_turn(
 
 
 render_page_brand()
+render_app_toolbar()
 
 st.title("Customer Support Agent")
 st.caption(
@@ -123,7 +121,7 @@ with chat_col:
     st.subheader("Chat with agent")
     st.caption("Ask about the queue, priorities, or similar resolved tickets.")
 
-    if st.button("Clear chat", type="secondary"):
+    if st.button("🗑️ Clear chat", type="secondary"):
         st.session_state[_CHAT_KEY] = []
         st.rerun()
 
@@ -165,7 +163,7 @@ with chat_col:
 
 with triage_col:
     toolbar = st.columns([2, 2])
-    load_queue = toolbar[0].button("Load queue")
+    load_queue = toolbar[0].button("📋 Load queue")
 
     if load_queue and list_ready:
         try:
@@ -181,7 +179,7 @@ with triage_col:
 
     queue_loaded = len(st.session_state[_QUEUE_KEY]) > 0
     triage_all = toolbar[1].button(
-        "Triage all",
+        "🤖 Triage all",
         disabled=not triage_ready or not queue_loaded,
         help="Run structured triage on every ticket in the loaded queue.",
     )

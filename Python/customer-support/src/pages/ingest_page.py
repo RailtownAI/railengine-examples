@@ -16,11 +16,13 @@ from customer_support.streamlit_common import (
     FIXTURES_DIR,
     env_ok,
     fixture_paths,
+    render_app_toolbar,
     render_page_brand,
     render_pipeline_stages,
 )
 
 render_page_brand()
+render_app_toolbar()
 
 st.title("Ingest")
 st.caption(
@@ -41,12 +43,12 @@ fixture_names = [p.name for p in fixtures]
 
 if fixture_names:
     pick = sidebar.selectbox("Pick fixture file", fixture_names)
-    if sidebar.button("Load into editor", type="secondary"):
+    if sidebar.button("📄 Load into editor", type="secondary"):
         text = (FIXTURES_DIR / pick).read_text(encoding="utf-8")
         st.session_state.ticket_editor = text
         st.rerun()
     if sidebar.button(
-        "Seed all fixtures",
+        "🌱 Seed all fixtures",
         type="secondary",
         disabled=not status["ENGINE_TOKEN"],
         help="Ingest every `fixtures/tickets/*.json` (requires ENGINE_TOKEN).",
@@ -90,7 +92,7 @@ if txt.strip():
 
 with c1:
     do_ingest = st.button(
-        "Ingest to Railengine",
+        "📥 Ingest to Railengine",
         disabled=not (ticket and ingest_ready),
         help="Requires ENGINE_TOKEN.",
     )
@@ -101,7 +103,7 @@ triage_ready = (
 
 with c2:
     do_triage = st.button(
-        "Run triage",
+        "🤖 Run triage",
         disabled=not triage_ready,
         help="Requires ENGINE_PAT, ENGINE_ID, and OPENAI_API_KEY.",
     )
@@ -142,7 +144,7 @@ if do_triage and ticket:
 
         raw = assessment.model_dump()
         st.download_button(
-            label="Download TriageAssessment JSON",
+            label="⬇️ Download TriageAssessment JSON",
             file_name=f"triage-{ticket.id}.json",
             mime="application/json",
             data=json.dumps(raw, indent=2, ensure_ascii=False).encode("utf-8"),

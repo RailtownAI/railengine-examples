@@ -155,9 +155,10 @@ def render_page_brand() -> None:
         return
     b64 = base64.b64encode(BRAND_LOGO_PATH.read_bytes()).decode()
     st.markdown(
-        f'<a href="https://railengine.ai" target="_blank" rel="noopener">'
+        f'<a href="https://railengine.ai" target="_blank" rel="noopener" '
+        f'style="display:inline-block;margin-bottom:0.25rem;">'
         f'<img src="data:image/png;base64,{b64}" alt="Railengine" width="120" '
-        f'style="display:block;margin-bottom:0.25rem;"/></a>',
+        f'style="display:inline-block;vertical-align:middle;"/></a>',
         unsafe_allow_html=True,
     )
 
@@ -175,19 +176,34 @@ def render_pipeline_stages() -> None:
 @st.dialog("Config")
 def show_env_config_dialog() -> None:
     """Modal: which env vars are set (values never shown)."""
-    st.caption("Loaded from `.env` next to `pyproject.toml`. Secret values are not displayed.")
+    st.caption(
+        "Loaded from `.env` next to `pyproject.toml`. Secret values are not displayed."
+    )
     status = env_ok()
     cols = st.columns(4)
     for i, (key, ok) in enumerate(status.items()):
         cols[i].metric(label=key, value="set" if ok else "missing")
 
 
-def render_config_button() -> None:
-    """Top-right **Config** button opens the env status dialog."""
-    _, btn_col = st.columns([11, 1])
-    with btn_col:
-        if st.button("Config", type="secondary", use_container_width=True):
+def render_app_toolbar(*, show_refresh_board: bool = False) -> bool:
+    """Top-right toolbar: optional **Refresh board** + **Config** (same row)."""
+    refresh_clicked = False
+    if show_refresh_board:
+        _, refresh_col, config_col = st.columns([9, 1, 1])
+        with refresh_col:
+            refresh_clicked = st.button(
+                "🔄 Refresh",
+                type="secondary",
+                use_container_width=True,
+            )
+    else:
+        _, config_col = st.columns([11, 1])
+
+    with config_col:
+        if st.button("⚙️ Config", type="secondary", use_container_width=True):
             show_env_config_dialog()
+
+    return refresh_clicked
 
 
 def group_tickets_by_status(
@@ -289,7 +305,7 @@ def render_ticket_subject_button(
 
     subj = ticket.subject[:100] + ("…" if len(ticket.subject) > 100 else "")
     if st.button(
-        subj,
+        f"🎫 {subj}",
         key=key,
         use_container_width=True,
         type="tertiary",

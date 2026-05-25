@@ -13,19 +13,18 @@ from customer_support.services.ticket_list_service import TicketListService
 from customer_support.streamlit_common import (
     env_ok,
     group_tickets_by_status,
+    render_app_toolbar,
     render_kanban_ticket_card,
     render_page_brand,
 )
 
 _KANBAN_SESSION_KEY = "kanban_tickets"
+_KANBAN_INITIAL_LOAD_DONE = "kanban_initial_load_done"
 
 render_page_brand()
+refresh = render_app_toolbar(show_refresh_board=True)
 
 st.title("Dashboard")
-st.caption(
-    "Kanban sourced from **`list_storage_documents`** · moves persist via **ingest upsert**."
-)
-
 env = env_ok()
 list_ready = env["ENGINE_PAT"] and env["ENGINE_ID"]
 ingest_ready = env["ENGINE_TOKEN"]
@@ -43,19 +42,21 @@ if not ingest_ready:
         "Set **ENGINE_TOKEN** to change status from card dropdowns (updates use ingest upsert)."
     )
 
-toolbar = st.columns([2, 6])
-refresh = toolbar[0].button("Refresh board")
-
-if refresh and list_ready:
+should_load = list_ready and (
+    refresh or not st.session_state.get(_KANBAN_INITIAL_LOAD_DONE)
+)
+if should_load:
     try:
         with st.spinner("Loading tickets from storage…"):
             st.session_state[_KANBAN_SESSION_KEY] = asyncio.run(
                 TicketListService().fetch_all()
             )
+        st.session_state[_KANBAN_INITIAL_LOAD_DONE] = True
     except Exception:
         st.error(traceback.format_exc())
     else:
-        st.success(f"Loaded **{len(st.session_state[_KANBAN_SESSION_KEY])}** tickets.")
+        if refresh:
+            st.success(f"Loaded **{len(st.session_state[_KANBAN_SESSION_KEY])}** tickets.")
 
 tickets: list[SupportTicket] = st.session_state[_KANBAN_SESSION_KEY]
 buckets = group_tickets_by_status(tickets)
@@ -111,5 +112,3 @@ if tickets:
             for t in tickets
         ]
         st.dataframe(tf, hide_index=True, use_container_width=True)
-elif list_ready:
-    st.info("Click **Refresh board** to load tickets.")
