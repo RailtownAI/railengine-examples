@@ -97,18 +97,3 @@ if move_hit is not None and ingest_ready:
         st.rerun()
     except Exception:
         st.error(traceback.format_exc())
-
-if tickets:
-    with st.expander("Table view"):
-        tf = [
-            {
-                "id": t.id,
-                "subject": t.subject[:140] + ("…" if len(t.subject) > 140 else ""),
-                "status": t.status,
-                "tags": ", ".join(t.tags),
-                "productArea": t.productArea,
-                "createdAt": t.createdAt,
-            }
-            for t in tickets
-        ]
-        st.dataframe(tf, hide_index=True, use_container_width=True)

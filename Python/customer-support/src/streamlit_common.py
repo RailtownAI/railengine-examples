@@ -195,7 +195,7 @@ def render_pipeline_stages() -> None:
     st.html(_PIPELINE_STAGES_HTML, width="stretch")
     st.caption(
         "This page sends JSON through **Ingest**. Triage agents search **Embedding** and "
-        "**Indexing**; the dashboard reads **Hot Storage**."
+        "**Indexing**; the dashboard reads **Hot Storage**; **Search** queries the index."
     )
 
 

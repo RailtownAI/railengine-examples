@@ -1,4 +1,4 @@
-"""Streamlit multipage entry: Dashboard, Ingest, Agent."""
+"""Streamlit multipage entry: Dashboard, Search, Ingest, Agent."""
 
 from __future__ import annotations
 
@@ -15,6 +15,7 @@ def main() -> None:
     pg = st.navigation(
         [
             st.Page("pages/dashboard.py", title="Dashboard", icon="🗂️", default=True),
+            st.Page("pages/search_page.py", title="Search", icon="🔍"),
             st.Page("pages/ingest_page.py", title="Ingest", icon="📥"),
             st.Page("pages/agent_page.py", title="Agent", icon="🤖"),
         ]

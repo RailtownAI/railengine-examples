@@ -26,6 +26,7 @@ uv run streamlit run src/streamlit_app.py
 2. (Optional breadth) On **Ingest**, use sidebar **Seed all fixtures** to ingest every `fixtures/tickets/*.json`.
 3. On **Ingest**, click **Run triage** on a single ticket, or open **Agent** → **Load queue** → **Triage all** for open and pending tickets.
 4. Switch to **Dashboard**, click **Refresh board**, and browse the Kanban. Click a **card subject** to open ticket details in a dialog; change status from the card **dropdown** (**requires `ENGINE_TOKEN`** alongside list credentials).
+5. Open **Search**, enter keywords (e.g. `billing invoice`), and click **🔍 Search** to query the Railengine keyword index. Use the table and subject links for full ticket details.
 
 ## Debug and visualize the triage agent (optional)
 
@@ -46,8 +47,8 @@ Opens the local visualization app so you can debug tool calls, prompts, and stru
 | Variable | Used for | Required when |
 |----------|-----------|---------------|
 | `ENGINE_TOKEN` | Ingest SDK | **Ingest** page · **Kanban status** dropdown |
-| `ENGINE_PAT` | Retrieval / list | **Dashboard** / triage tools |
-| `ENGINE_ID` | Engine routing | **Dashboard** / triage tools |
+| `ENGINE_PAT` | Retrieval / list / search | **Dashboard**, **Search**, triage tools |
+| `ENGINE_ID` | Engine routing | **Dashboard**, **Search**, triage tools |
 | `OPENAI_API_KEY` | Railtracks LLM | **Run triage** |
 
 A local `.env` next to [`pyproject.toml`](pyproject.toml) is loaded automatically for Streamlit and the webhook receiver.
@@ -61,10 +62,10 @@ If your engine masks sensitive fields after ingest, compare raw fixtures to stor
 
 - `src/models/` — Pydantic shapes (`customer_support.models` at import time)
 - `src/repositories/` — Railengine / ingest SDK I/O
-- `src/services/` — ingest, list, triage use cases
+- `src/services/` — ingest, list, search, triage use cases
 - `src/controllers/` — optional webhook receiver
 - `src/agents/` — Railtracks agent + tools
-- `src/pages/` — Streamlit Dashboard, Ingest, and Agent
+- `src/pages/` — Streamlit Dashboard, Search, Ingest, and Agent
 - [`src/streamlit_app.py`](src/streamlit_app.py) — navigation entry (importable as `customer_support.streamlit_app`)
 
 ## Local only
