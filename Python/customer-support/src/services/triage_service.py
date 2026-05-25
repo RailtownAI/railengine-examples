@@ -40,7 +40,8 @@ class TriageService:
 
 1) Call search_similar_tickets with a query built from subject, body, and productArea.
 2) Optionally call list_recent_tickets(status="resolved") for extra historical context.
-3) Return a TriageAssessment with priority, category, internal_summary, draft_reply_to_customer, similar_ticket_ids, and reasoning.
+3) Return a TriageAssessment with priority, category, internal_summary,
+   draft_reply_to_customer, similar_ticket_ids, and reasoning.
 """
         result = await flow.ainvoke(prompt)
         if isinstance(result, StructuredResponse):
