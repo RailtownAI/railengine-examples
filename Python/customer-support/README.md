@@ -62,7 +62,7 @@ If your engine masks sensitive fields after ingest, compare raw fixtures to stor
 
 Code is organized in layers so UI, business logic, and Railengine I/O stay separate. Imports use the **`customer_support`** package (`pyproject.toml` maps `src/` to that name).
 
-```
+```text
 pages / controllers  →  services  →  repositories  →  rail-engine / rail-engine-ingest
                               ↓
                            models
@@ -81,7 +81,7 @@ agents (tools)  →  services or repositories
 | [`src/streamlit_app.py`](src/streamlit_app.py) | App entry: `st.navigation` for Dashboard / Search / Ingest / Agent | `uv run streamlit run src/streamlit_app.py` |
 | [`src/streamlit_common.py`](src/streamlit_common.py) | Shared UI (brand, toolbar, Kanban cards, ticket dialog, pipeline diagram) | Used across pages |
 
-**Repo root (besides `src/`)**
+**Repository root (besides `src/`)**
 
 - [`engine-schema.json`](engine-schema.json) — paste into the Railengine console when creating the engine
 - [`fixtures/tickets/`](fixtures/tickets/) — sample `SupportTicket` JSON for ingest demos
