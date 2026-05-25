@@ -69,12 +69,16 @@ class Handler(BaseHTTPRequestHandler):
 
 def main() -> None:
     ensure_dotenv_loaded()
-    parser = argparse.ArgumentParser(description="Receive Railengine webhook POSTs locally.")
+    parser = argparse.ArgumentParser(
+        description="Receive Railengine webhook POSTs locally."
+    )
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8765)
     args = parser.parse_args()
     httpd = HTTPServer((args.host, args.port), Handler)
-    print(f"Listening on http://{args.host}:{args.port}/webhook (POST)", file=sys.stderr)
+    print(
+        f"Listening on http://{args.host}:{args.port}/webhook (POST)", file=sys.stderr
+    )
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
