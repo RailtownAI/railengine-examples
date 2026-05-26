@@ -1,0 +1,11 @@
+{
+  "id": "ticket-resolved-billing-001",
+  "subject": "Resolved: VAT ID missing on invoice export",
+  "body": "Customer could not download VAT-compliant PDFs. Fix was to add VAT ID in Billing → Company profile and clear CDN cache.",
+  "status": "resolved",
+  "tags": ["billing", "vat", "invoice"],
+  "createdAt": "2026-04-10T09:00:00Z",
+  "customerEmail": "redacted@example.com",
+  "customerPhone": "",
+  "productArea": "billing"
+}

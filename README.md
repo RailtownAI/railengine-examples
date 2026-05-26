@@ -11,7 +11,7 @@
 
 [TypeScript](https://github.com/RailtownAI/railengine-examples/tree/main/TypeScript)
 
-[Python](https://github.com/RailtownAI/railengine-examples/tree/main/Python)
+[Python](https://github.com/RailtownAI/railengine-examples/tree/main/Python) — includes [Customer Support Triage Agent](https://github.com/RailtownAI/railengine-examples/tree/main/Python/customer-support) (Railengine + Railtracks)
 
 ### AIoT
 
@@ -30,5 +30,7 @@
 [Expense Tracker](https://github.com/RailtownAI/railengine-examples/tree/main/TypeScript/nextjs-expense-tracker)
 
 [Food Diary](https://github.com/RailtownAI/railengine-examples/tree/main/TypeScript/nextjs-food-diary)
+
+[Customer Support Triage (Python)](https://github.com/RailtownAI/railengine-examples/tree/main/Python/customer-support)
 
 [Thermometer](https://github.com/RailtownAI/railengine-examples/tree/main/MicroPython)

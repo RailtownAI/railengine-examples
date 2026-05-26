@@ -105,3 +105,6 @@ dmypy.json
 
 /CSharp/Examples/RailenginePoweredStatusPage/appsettings.Development.json
 
+
+**/.railtracks
+**/uv.lock

@@ -1,0 +1,11 @@
+{
+  "id": "ticket-resolved-billing-002",
+  "subject": "Resolved: Portal 500 on invoice — stale session cookie",
+  "body": "User saw 500 on invoice PDF until cookies cleared. Documented workaround and shipped fix in portal 2.3.1.",
+  "status": "resolved",
+  "tags": ["billing", "portal", "cache"],
+  "createdAt": "2026-04-22T11:30:00Z",
+  "customerEmail": "redacted@example.com",
+  "customerPhone": "",
+  "productArea": "billing"
+}

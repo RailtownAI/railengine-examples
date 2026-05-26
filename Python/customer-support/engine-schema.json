@@ -1,0 +1,11 @@
+{
+  "id": "ticket-sample-001",
+  "subject": "Unable to download invoice — billing portal error",
+  "body": "I'm logged in as finance@acmecorp.example but the invoice PDF returns 500. Our API key for the sandbox is sk-demo-INVALID-KEY-12345. Please call me at +1-555-0199.",
+  "status": "open",
+  "tags": ["billing", "portal"],
+  "createdAt": "2026-05-01T14:30:00Z",
+  "customerEmail": "finance@acmecorp.example",
+  "customerPhone": "+1-555-0199",
+  "productArea": "billing"
+}

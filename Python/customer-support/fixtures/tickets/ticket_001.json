@@ -1,0 +1,11 @@
+{
+  "id": "ticket-open-001",
+  "subject": "Invoice PDF returns 500 in billing portal",
+  "body": "I'm logged in as finance@acmecorp.example but every invoice download fails with HTTP 500. Our sandbox integration key is sk-demo-INVALID-KEY-12345 — pasted from the dashboard. Please call me at +1-555-0199 if you need to debug live.",
+  "status": "open",
+  "tags": ["billing", "portal", "urgent"],
+  "createdAt": "2026-05-20T15:00:00Z",
+  "customerEmail": "finance@acmecorp.example",
+  "customerPhone": "+1-555-0199",
+  "productArea": "billing"
+}
