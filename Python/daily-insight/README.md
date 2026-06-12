@@ -1,0 +1,97 @@
+# Daily Insight (Railtracks)
+
+A small Python service that mirrors the **Daily Insight** feature from [`CSharp/Examples/RailenginePoweredStatusPage`](../../CSharp/Examples/RailenginePoweredStatusPage/): given a Railengine of metric records, ask an LLM to produce a one-line-per-metric plain-text summary of recent values.
+
+Where the C# version drives the LLM through an Anthropic MCP server attached as a tool source, this version drives it through [Railtracks](https://github.com/RailtownAI/railtracks) with a single `@rt.function_node` tool that calls the [Railengine Python SDK](https://pypi.org/project/rail-engine/) directly.
+
+## Before you start
+
+- A [Railengine](https://railengine.ai/) engine populated with `MetricRecord`-shaped documents (`metric`, `timestamp`, `value` — see [`MetricRecord`](src/models/metric.py)). The C# status page example produces records in exactly this shape.
+- An Anthropic API key with access to `claude-haiku-4-5-20251001` (or another model you set via `INSIGHT_MODEL`).
+
+## Quick start
+
+```bash
+cd Python/daily-insight
+cp .env.example .env       # fill ENGINE_ID, ENGINE_PAT, ANTHROPIC_API_KEY
+uv sync
+uv run uvicorn daily_insight.controllers.api:app --reload --port 8000
+```
+
+Then:
+
+```bash
+# Liveness
+curl http://127.0.0.1:8000/health
+
+# Generate a fresh insight
+curl -X POST http://127.0.0.1:8000/insight
+```
+
+`POST /insight` runs the Railtracks agent against your engine and returns:
+
+```json
+{
+  "text": "latency-p95: Latest reading 87.3 ms, trending down over the last 50 samples.\nerror-rate: Holding flat near 2.4 errors/min.\n...",
+  "generated_at": "2026-06-12T18:42:11.123456+00:00",
+  "metric_count": 4,
+  "error": null
+}
+```
+
+Expect each call to take a few seconds — the agent makes one Anthropic call plus one Railengine GET. The exact latency depends on the model.
+
+## Environment variables
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `ENGINE_ID` | Yes | Railengine engine GUID — same one the C# status page reads from |
+| `ENGINE_PAT` | Yes | Railengine PAT used for retrieval |
+| `ANTHROPIC_API_KEY` | Yes | Anthropic API key used by `rt.llm.AnthropicLLM` |
+| `INSIGHT_MODEL` | No | Override the default Claude model (`claude-haiku-4-5-20251001`) |
+| `RAILTOWN_API_URL` | No | Override the Railengine API host (defaults to production) |
+
+Variables are read from `.env` next to `pyproject.toml`, then from the process environment.
+
+## Project layout
+
+```text
+controllers (FastAPI)  →  services  →  agents (Railtracks)  →  repositories  →  rail-engine
+                                                ↓
+                                             models
+```
+
+| Path | Role |
+|---|---|
+| [`src/models/`](src/models/) | Pydantic types — `MetricRecord`, `DailyInsight` |
+| [`src/repositories/`](src/repositories/) | [`MetricRepository`](src/repositories/metric_repository.py) — wraps `Railengine.list_storage_documents` |
+| [`src/agents/`](src/agents/) | [`tools.py`](src/agents/tools.py) defines the `get_recent_metrics` function node; [`insight_agent.py`](src/agents/insight_agent.py) wires it to `rt.llm.AnthropicLLM` |
+| [`src/services/`](src/services/) | [`InsightService`](src/services/insight_service.py) — runs the `rt.Flow` and shapes the response |
+| [`src/controllers/`](src/controllers/) | [`api.py`](src/controllers/api.py) — FastAPI app with `/health` and `/insight` |
+| [`src/config/`](src/config/) | `.env` loading and required-env validation |
+
+## How this differs from the C# version
+
+The C# [`DailyInsightService`](../../CSharp/Examples/RailenginePoweredStatusPage/Services/DailyInsightService.cs) is a `BackgroundService` that wakes once every 24 hours and posts to `/v1/messages` with the Railengine MCP server (`mcp_servers`) attached, then streams the response. The same prompt and output format are used here.
+
+This Python version:
+
+- Replaces the MCP attachment with a Railtracks `@rt.function_node` tool (`get_recent_metrics`) that calls the Railengine Python SDK directly. The LLM still chooses when to call it, but the schema and execution are local.
+- Replaces the 24h `BackgroundService` with an on-demand HTTP endpoint. A scheduler (cron, GitHub Actions, Azure Logic Apps, etc.) can POST `/insight` daily if you want the same cadence.
+- Keeps the strict plain-text output rules so the existing C# `Daily Insight` card can render the result unchanged.
+
+## Debug and visualize the agent (optional)
+
+After at least one insight run:
+
+```bash
+cd Python/daily-insight
+railtracks update
+railtracks viz
+```
+
+(`railtracks[visual]` is in `pyproject.toml`; run `uv sync` if you have not already.) Opens the local visualization app for inspecting tool calls and prompts.
+
+## Local only
+
+Don't expose this service on the public internet without authentication — `/insight` triggers a paid LLM call and a Railengine read on every invocation.
