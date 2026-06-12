@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
@@ -25,14 +26,37 @@ _MAX_SAMPLE_SIZE = 5
 
 
 def _upload_evaluation(payload: dict[str, Any]) -> None:
-    """Callback handed to evals.evaluate — uploads each EvaluationResult to Conductr."""
-    if railtownai.get_railtown_handler() is None:
+    """Callback handed to evals.evaluate — uploads each EvaluationResult to Conductr.
+
+    Skips silently when EVALUATIONS_API_TOKEN is unset (local dev without the
+    upload token). Otherwise logs success, the SDK's silent-False generic-error
+    path, or any raised exception (EvaluationsNotInitializedError /
+    EvaluationsValidationError).
+
+    Why explicit-False logging: railtownai.upload_agent_evaluation catches all
+    non-config exceptions and returns False without raising or logging. Without
+    surfacing that path explicitly, HTTP-layer failures (auth rejection by
+    Conductr, ingestion endpoint unreachable, rail-engine-ingest errors) look
+    indistinguishable from success — the previous wrapper logged
+    "uploaded to Conductr" on every call regardless of outcome.
+    """
+    if not os.environ.get("EVALUATIONS_API_TOKEN", "").strip():
         return
     try:
-        railtownai.upload_agent_evaluation(payload)
-        logger.info("Evaluation result uploaded to Conductr")
+        success = railtownai.upload_agent_evaluation(payload)
+        if success:
+            logger.info("Evaluation result uploaded to Conductr")
+        else:
+            logger.error(
+                "railtownai.upload_agent_evaluation returned False — upload "
+                "failed without raising. Likely causes: token rejected by "
+                "Conductr, ingestion endpoint unreachable, or rail-engine-ingest "
+                "HTTP error. The SDK suppresses details; bump the "
+                "`railtown.engine.ingest` logger to DEBUG to see the HTTP "
+                "exchange."
+            )
     except Exception:
-        logger.exception("Failed to upload evaluation result to Railtown")
+        logger.exception("Evaluation upload raised")
 
 
 def _fetch_historical_session(agent_run_id: UUID) -> dict[str, Any]:
