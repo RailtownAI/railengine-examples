@@ -49,6 +49,7 @@ Expect each call to take a few seconds — the agent makes one Anthropic call pl
 | `ENGINE_PAT` | Yes | Railengine PAT used for retrieval |
 | `LLM_API_KEY` | Yes | Anthropic API key. Provider-neutral name so the same setting works across agents; on startup the value is copied into `ANTHROPIC_API_KEY` for the Anthropic SDK to pick up. `ANTHROPIC_API_KEY` is also accepted directly if you prefer the SDK-native name. |
 | `LLM_MODEL` | No | Override the default Claude model (`claude-haiku-4-5-20251001`) |
+| `RAILTOWN_API_KEY` | No | Enables Railtown observability. When set, the agent ships its logs (and any unhandled-exception tracebacks from the global handler) to Railtown via the [`railtownai`](https://pypi.org/project/railtownai/) logging handler. Unset → no observability, agent runs normally. |
 | `RAILTOWN_API_URL` | No | Override the Railengine API host (defaults to production) |
 
 Variables are read from `.env` next to `pyproject.toml`, then from the process environment.
