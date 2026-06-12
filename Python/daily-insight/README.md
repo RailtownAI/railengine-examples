@@ -26,6 +26,9 @@ curl http://127.0.0.1:8000/health
 
 # Generate a fresh insight
 curl -X POST http://127.0.0.1:8000/insight
+
+# Generate fresh insight(s) and evaluate them
+curl -X POST http://127.0.0.1:8000/evaluate -H 'Content-Type: application/json' -d '{"sample_size": 1}'
 ```
 
 `POST /insight` runs the Railtracks agent against your engine and returns:
@@ -40,6 +43,20 @@ curl -X POST http://127.0.0.1:8000/insight
 ```
 
 Expect each call to take a few seconds — the agent makes one Anthropic call plus one Railengine GET. The exact latency depends on the model.
+
+## Evaluation
+
+`POST /evaluate` is a self-contained smoke test: it triggers `sample_size` fresh `/insight` runs (default 1, capped at 5), then runs Railtracks evaluators against the resulting sessions and returns the scores. When `RAILTOWN_API_KEY` is set, each result also uploads to Conductr via `railtownai.upload_agent_evaluation`.
+
+Three evaluators run per call (see [`agents/evaluations.py`](src/agents/evaluations.py)):
+
+- **`ToolUseEvaluator`** (free, local) — checks the agent's tool call pattern. The system prompt says "use AT MOST 1 tool call to `get_recent_metrics`"; this catches regressions where the model skips it or over-calls.
+- **`LLMInferenceEvaluator`** (free, local) — checks the LLM call pattern (latency, tokens, errors).
+- **`JudgeEvaluator`** with two custom metrics:
+  - **`FormatCompliance`** (Compliant / MinorDeviation / MajorDeviation) — does the response follow the strict one-line-per-metric format that the C# card expects to render unchanged?
+  - **`FactualGrounding`** (FullyGrounded / PartiallyGrounded / Hallucinated) — does every value and trend in the response trace back to the tool output, or is the model inventing things?
+
+Cost per call ≈ `sample_size · 3` LLM calls (one to generate, two for the judge metrics). Override the judge model via `EVAL_JUDGE_MODEL`; defaults to `LLM_MODEL` or `claude-haiku-4-5-20251001`.
 
 ## Environment variables
 

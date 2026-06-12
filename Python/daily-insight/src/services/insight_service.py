@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, timezone
+from typing import Any
 
 import railtracks as rt
 import railtownai
@@ -49,10 +50,29 @@ def _upload_session(session: "rt.Session") -> None:
         logger.exception("Unexpected error uploading agent run to Railtown")
 
 
+async def _count_metrics() -> int:
+    """Cheap second read for the API response — does not block the agent."""
+    try:
+        records = await MetricRepository().list_recent(limit=50)
+        return len({r.metric for r in records})
+    except Exception:
+        return 0
+
+
 class InsightService:
     """Run the daily insight agent and return a DailyInsight."""
 
     async def run(self) -> DailyInsight:
+        insight, _payload = await self.run_and_capture_session()
+        return insight
+
+    async def run_and_capture_session(self) -> tuple[DailyInsight, dict[str, Any]]:
+        """Run the agent and return both the DailyInsight and the session payload.
+
+        The payload is the same structure passed to ``railtownai.upload_agent_run``
+        — used by the evaluation service to feed sessions into
+        ``evals.extract_agent_data_points`` without re-running the agent.
+        """
         agent_cls = build_insight_agent()
         message_history = rt.llm.MessageHistory([rt.llm.UserMessage(PROMPT)])
 
@@ -64,20 +84,14 @@ class InsightService:
             result = await rt.call(agent_cls, message_history)
             _upload_session(session)
 
+        session_payload = session.payload()
+
         text = _result_text(result).strip()
         metric_count = await _count_metrics()
 
-        return DailyInsight(
+        insight = DailyInsight(
             text=text,
             generated_at=datetime.now(timezone.utc),
             metric_count=metric_count,
         )
-
-
-async def _count_metrics() -> int:
-    """Cheap second read for the API response — does not block the agent."""
-    try:
-        records = await MetricRepository().list_recent(limit=50)
-        return len({r.metric for r in records})
-    except Exception:
-        return 0
+        return insight, session_payload

@@ -5,19 +5,23 @@ Run::
     uv run uvicorn daily_insight.controllers.api:app --reload --port 8000
 
 Endpoints:
-- GET  /health  — liveness probe
-- POST /insight — run the Railtracks agent against Railengine and return a DailyInsight
+- GET  /health   — liveness probe
+- POST /insight  — run the Railtracks agent against Railengine and return a DailyInsight
+- POST /evaluate — run the agent N times, evaluate the sessions, return scores
 """
 
 from __future__ import annotations
 
 import logging
 import os
+from typing import Optional
+from uuid import UUID
 
 import railtownai
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
+from pydantic import BaseModel, Field
 
 from daily_insight.config import (
     MissingEnvVarsError,
@@ -25,8 +29,25 @@ from daily_insight.config import (
     ensure_dotenv_loaded,
     validate_required_env,
 )
-from daily_insight.models import DailyInsight
-from daily_insight.services import InsightService
+from daily_insight.models import DailyInsight, EvaluationRun
+from daily_insight.services import EvaluationService, InsightService
+
+
+class EvaluateRequest(BaseModel):
+    sample_size: int = Field(
+        default=1,
+        ge=1,
+        le=5,
+        description="Number of fresh insight runs to generate and evaluate (capped at 5).",
+    )
+    # Forward-compat: when populated, future versions will fetch the named
+    # historical run from Conductr and evaluate that instead of generating
+    # fresh runs. Currently accepted (so existing clients don't need updating
+    # later) but logged + ignored — `sample_size` still drives behaviour.
+    agent_run_id: Optional[UUID] = Field(
+        default=None,
+        description="Optional. Reserved for future use — will identify a specific historical agent run to evaluate. Currently logged and ignored; sample_size still drives behaviour.",
+    )
 
 
 logger = logging.getLogger(__name__)
@@ -93,3 +114,19 @@ async def health() -> dict[str, str]:
 @app.post("/insight", response_model=DailyInsight)
 async def generate_insight() -> DailyInsight:
     return await InsightService().run()
+
+
+@app.post("/evaluate", response_model=EvaluationRun)
+async def evaluate(req: EvaluateRequest = EvaluateRequest()) -> EvaluationRun:
+    """Run the agent N times and evaluate the resulting sessions.
+
+    Cost per call ≈ ``sample_size · 3`` LLM calls — one to generate the insight,
+    two for the judge metrics (FormatCompliance + FactualGrounding). The
+    ToolUseEvaluator and LLMInferenceEvaluator are cost-free local checks.
+    """
+    if req.agent_run_id is not None:
+        logger.info(
+            "agent_run_id=%s provided but not yet wired — generating fresh runs",
+            req.agent_run_id,
+        )
+    return await EvaluationService().run(sample_size=req.sample_size)
