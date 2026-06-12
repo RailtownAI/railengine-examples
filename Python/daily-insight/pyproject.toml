@@ -10,7 +10,12 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "rail-engine>=0.2.1",
-    "railtracks[visual]>=1.4.0",
+    # Pinned to commit 4e4ed57 for the ToolUseEvaluator single-session fix
+    # (https://github.com/RailtownAI/railtracks/commit/4e4ed572d76f946908bb3fd441443be8903ae8de
+    # — needed because /evaluate's sample_size=1 default produces one session
+    # and the released 1.4.0 ToolUseEvaluator raises ValueError on fewer than 2).
+    # Swap back to "railtracks[visual]>=1.4.1" (or higher) once that release ships.
+    "railtracks[visual] @ git+https://github.com/RailtownAI/railtracks.git@4e4ed572d76f946908bb3fd441443be8903ae8de",
     "railtownai>=2.0.13",
     "pydantic>=2.0",
     "python-dotenv>=1.0.0",
