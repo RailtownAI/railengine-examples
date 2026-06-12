@@ -18,6 +18,7 @@ from fastapi import FastAPI, HTTPException
 
 from daily_insight.config import (
     MissingEnvVarsError,
+    configure_runtime_env,
     ensure_dotenv_loaded,
     validate_required_env,
 )
@@ -31,6 +32,7 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     ensure_dotenv_loaded()
+    configure_runtime_env()
     try:
         validate_required_env()
     except MissingEnvVarsError as exc:

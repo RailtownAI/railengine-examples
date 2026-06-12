@@ -7,13 +7,13 @@ Where the C# version drives the LLM through an Anthropic MCP server attached as 
 ## Before you start
 
 - A [Railengine](https://railengine.ai/) engine populated with `MetricRecord`-shaped documents (`metric`, `timestamp`, `value` — see [`MetricRecord`](src/models/metric.py)). The C# status page example produces records in exactly this shape.
-- An Anthropic API key with access to `claude-haiku-4-5-20251001` (or another model you set via `INSIGHT_MODEL`).
+- An Anthropic API key with access to `claude-haiku-4-5-20251001` (or another model you set via `LLM_MODEL`).
 
 ## Quick start
 
 ```bash
 cd Python/daily-insight
-cp .env.example .env       # fill ENGINE_ID, ENGINE_PAT, ANTHROPIC_API_KEY
+cp .env.example .env       # fill ENGINE_ID, ENGINE_PAT, LLM_API_KEY
 uv sync
 uv run uvicorn daily_insight.controllers.api:app --reload --port 8000
 ```
@@ -47,8 +47,8 @@ Expect each call to take a few seconds — the agent makes one Anthropic call pl
 |---|---|---|
 | `ENGINE_ID` | Yes | Railengine engine GUID — same one the C# status page reads from |
 | `ENGINE_PAT` | Yes | Railengine PAT used for retrieval |
-| `ANTHROPIC_API_KEY` | Yes | Anthropic API key used by `rt.llm.AnthropicLLM` |
-| `INSIGHT_MODEL` | No | Override the default Claude model (`claude-haiku-4-5-20251001`) |
+| `LLM_API_KEY` | Yes | Anthropic API key. Provider-neutral name so the same setting works across agents; on startup the value is copied into `ANTHROPIC_API_KEY` for the Anthropic SDK to pick up. `ANTHROPIC_API_KEY` is also accepted directly if you prefer the SDK-native name. |
+| `LLM_MODEL` | No | Override the default Claude model (`claude-haiku-4-5-20251001`) |
 | `RAILTOWN_API_URL` | No | Override the Railengine API host (defaults to production) |
 
 Variables are read from `.env` next to `pyproject.toml`, then from the process environment.
@@ -79,6 +79,17 @@ This Python version:
 - Replaces the MCP attachment with a Railtracks `@rt.function_node` tool (`get_recent_metrics`) that calls the Railengine Python SDK directly. The LLM still chooses when to call it, but the schema and execution are local.
 - Replaces the 24h `BackgroundService` with an on-demand HTTP endpoint. A scheduler (cron, GitHub Actions, Azure Logic Apps, etc.) can POST `/insight` daily if you want the same cadence.
 - Keeps the strict plain-text output rules so the existing C# `Daily Insight` card can render the result unchanged.
+
+## Containerization
+
+A [`Dockerfile`](Dockerfile) is included so the service can be containerized for deployment. The image installs the package via `pyproject.toml` and runs `uvicorn daily_insight.controllers.api:app` on port 8000. Build and run locally with:
+
+```bash
+docker build -t daily-insight .
+docker run --rm -p 8000:8000 --env-file .env daily-insight
+```
+
+If you put the agent behind a reverse proxy that requires bearer auth, the C# caller in [`RailenginePoweredStatusPage`](../../CSharp/Examples/RailenginePoweredStatusPage/) can attach the token via the `DailyInsight:AgentBearerToken` setting — `DailyInsightService.GenerateFromAgentAsync` adds it as `Authorization: Bearer <token>` when non-empty.
 
 ## Debug and visualize the agent (optional)
 

@@ -31,7 +31,7 @@ def build_insight_agent():
             "ANTHROPIC_API_KEY is not set. Add it to .env or export it before running."
         )
 
-    model = os.environ.get("INSIGHT_MODEL", "").strip() or DEFAULT_MODEL
+    model = os.environ.get("LLM_MODEL", "").strip() or DEFAULT_MODEL
     llm = rt.llm.AnthropicLLM(model)
 
     return rt.agent_node(
