@@ -1,4 +1,4 @@
-"""Evaluation run result returned by POST /evaluate."""
+"""Evaluation run result returned by POST /evals/run."""
 
 from __future__ import annotations
 

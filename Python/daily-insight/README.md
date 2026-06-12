@@ -28,7 +28,7 @@ curl http://127.0.0.1:8000/health
 curl -X POST http://127.0.0.1:8000/insight
 
 # Generate fresh insight(s) and evaluate them
-curl -X POST http://127.0.0.1:8000/evaluate -H 'Content-Type: application/json' -d '{"sample_size": 1}'
+curl -X POST http://127.0.0.1:8000/evals/run -H 'Content-Type: application/json' -d '{"sample_size": 1}'
 ```
 
 `POST /insight` runs the Railtracks agent against your engine and returns:
@@ -46,7 +46,7 @@ Expect each call to take a few seconds — the agent makes one Anthropic call pl
 
 ## Evaluation
 
-`POST /evaluate` runs Railtracks evaluators against agent sessions and returns the scores. Two modes:
+`POST /evals/run` runs Railtracks evaluators against agent sessions and returns the scores. Two modes:
 
 | Mode | Trigger | Cost | What it evaluates |
 |---|---|---|---|
@@ -55,10 +55,10 @@ Expect each call to take a few seconds — the agent makes one Anthropic call pl
 
 ```bash
 # Fresh (default)
-curl -X POST .../evaluate -H 'Content-Type: application/json' -d '{"sample_size": 1}'
+curl -X POST .../evals/run -H 'Content-Type: application/json' -d '{"sample_size": 1}'
 
 # Historical
-curl -X POST .../evaluate -H 'Content-Type: application/json' \
+curl -X POST .../evals/run -H 'Content-Type: application/json' \
   -d '{"agent_run_id": "0466964a-1234-5678-9abc-def012345678"}'
 ```
 

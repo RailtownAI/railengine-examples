@@ -91,7 +91,7 @@ class EvaluationService:
                 session_payloads.append(payload)
 
         # extract_agent_data_points reads JSON session files from disk. Stage the
-        # captured payloads in a request-scoped tempdir so each /evaluate call
+        # captured payloads in a request-scoped tempdir so each /evals/run call
         # sees exactly its own sessions — no leakage between concurrent requests.
         with tempfile.TemporaryDirectory(prefix="daily-insight-eval-") as tmpdir:
             tmp = Path(tmpdir)

@@ -7,7 +7,7 @@ Run::
 Endpoints:
 - GET  /health   — liveness probe
 - POST /insight  — run the Railtracks agent against Railengine and return a DailyInsight
-- POST /evaluate — run the agent N times, evaluate the sessions, return scores
+- POST /evals/run — run the agent N times (or fetch a historical session), evaluate, return scores
 """
 
 from __future__ import annotations
@@ -112,8 +112,8 @@ async def generate_insight() -> DailyInsight:
     return await InsightService().run()
 
 
-@app.post("/evaluate", response_model=EvaluationRun)
-async def evaluate(req: EvaluateRequest = EvaluateRequest()) -> EvaluationRun:
+@app.post("/evals/run", response_model=EvaluationRun)
+async def run_evaluation(req: EvaluateRequest = EvaluateRequest()) -> EvaluationRun:
     """Evaluate either fresh insight runs or a named historical run.
 
     Fresh mode (``agent_run_id`` absent): generates ``sample_size`` insight
