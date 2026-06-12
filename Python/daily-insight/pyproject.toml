@@ -15,7 +15,11 @@ dependencies = [
     # — needed because /evaluate's sample_size=1 default produces one session
     # and the released 1.4.0 ToolUseEvaluator raises ValueError on fewer than 2).
     # Swap back to "railtracks[visual]>=1.4.1" (or higher) once that release ships.
-    "railtracks[visual] @ git+https://github.com/RailtownAI/railtracks.git@4e4ed572d76f946908bb3fd441443be8903ae8de",
+    # The #subdirectory hint is required: the railtracks repo is a monorepo
+    # (packages/, pdoc/, docs/ at the root), so pip's flat-layout discovery
+    # fails when pointed at the root. The actual package lives at
+    # packages/railtracks/ with its own pyproject.toml + src/ layout.
+    "railtracks[visual] @ git+https://github.com/RailtownAI/railtracks.git@4e4ed572d76f946908bb3fd441443be8903ae8de#subdirectory=packages/railtracks",
     "railtownai>=2.0.13",
     "pydantic>=2.0",
     "python-dotenv>=1.0.0",
