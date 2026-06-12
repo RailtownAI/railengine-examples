@@ -46,7 +46,23 @@ Expect each call to take a few seconds — the agent makes one Anthropic call pl
 
 ## Evaluation
 
-`POST /evaluate` is a self-contained smoke test: it triggers `sample_size` fresh `/insight` runs (default 1, capped at 5), then runs Railtracks evaluators against the resulting sessions and returns the scores. When `RAILTOWN_API_KEY` is set, each result also uploads to Conductr via `railtownai.upload_agent_evaluation`.
+`POST /evaluate` runs Railtracks evaluators against agent sessions and returns the scores. Two modes:
+
+| Mode | Trigger | Cost | What it evaluates |
+|---|---|---|---|
+| **Fresh** (default) | body omits `agent_run_id` | ≈ `sample_size · 3` LLM calls | Generates `sample_size` brand-new `/insight` runs (default 1, capped at 5) and scores them. Self-contained smoke test. |
+| **Historical** | body sets `agent_run_id` | ≈ 2 LLM calls (judge only) | Fetches the named past run from Conductr via [`railtownai.get_agent_runs`](https://pypi.org/project/railtownai/) and scores that single session. Replays a real production interaction without re-spending generation cost. |
+
+```bash
+# Fresh (default)
+curl -X POST .../evaluate -H 'Content-Type: application/json' -d '{"sample_size": 1}'
+
+# Historical
+curl -X POST .../evaluate -H 'Content-Type: application/json' \
+  -d '{"agent_run_id": "0466964a-1234-5678-9abc-def012345678"}'
+```
+
+When `RAILTOWN_API_KEY` is set, each `EvaluationResult` also uploads to Conductr via `railtownai.upload_agent_evaluation`.
 
 Three evaluators run per call (see [`agents/evaluations.py`](src/agents/evaluations.py)):
 
@@ -56,7 +72,12 @@ Three evaluators run per call (see [`agents/evaluations.py`](src/agents/evaluati
   - **`FormatCompliance`** (Compliant / MinorDeviation / MajorDeviation) — does the response follow the strict one-line-per-metric format that the C# card expects to render unchanged?
   - **`FactualGrounding`** (FullyGrounded / PartiallyGrounded / Hallucinated) — does every value and trend in the response trace back to the tool output, or is the model inventing things?
 
-Cost per call ≈ `sample_size · 3` LLM calls (one to generate, two for the judge metrics). Override the judge model via `EVAL_JUDGE_MODEL`; defaults to `LLM_MODEL` or `claude-haiku-4-5-20251001`.
+Override the judge model via `EVAL_JUDGE_MODEL`; defaults to `LLM_MODEL` or `claude-haiku-4-5-20251001`.
+
+**Historical-mode prerequisites.** The agent fetches sessions from Conductr's platform API, so it needs:
+
+- `CONDUCTR_PROJECT_ID` — already present in deployed environments (the deploy tooling seeds it).
+- `CONDUCTR_PROJECT_PAT` — a project-level access token generated in the Conductr UI under *project → Secret Tokens*. Not yet auto-seeded by the deploy tooling; for a deployed agent, set it once with `az keyvault secret set --vault-name <kv> --name CONDUCTR-PROJECT-PAT --value '<token>'` and roll a config-only revision to wire it onto the container.
 
 ## Environment variables
 

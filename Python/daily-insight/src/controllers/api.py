@@ -38,15 +38,11 @@ class EvaluateRequest(BaseModel):
         default=1,
         ge=1,
         le=5,
-        description="Number of fresh insight runs to generate and evaluate (capped at 5).",
+        description="Number of fresh insight runs to generate and evaluate (capped at 5). Ignored when agent_run_id is provided.",
     )
-    # Forward-compat: when populated, future versions will fetch the named
-    # historical run from Conductr and evaluate that instead of generating
-    # fresh runs. Currently accepted (so existing clients don't need updating
-    # later) but logged + ignored — `sample_size` still drives behaviour.
     agent_run_id: Optional[UUID] = Field(
         default=None,
-        description="Optional. Reserved for future use — will identify a specific historical agent run to evaluate. Currently logged and ignored; sample_size still drives behaviour.",
+        description="Optional. When set, fetches the named historical agent run from Conductr (via railtownai.get_agent_runs) and evaluates that single session instead of generating fresh ones. Requires CONDUCTR_PROJECT_PAT and CONDUCTR_PROJECT_ID on the agent.",
     )
 
 
@@ -118,15 +114,20 @@ async def generate_insight() -> DailyInsight:
 
 @app.post("/evaluate", response_model=EvaluationRun)
 async def evaluate(req: EvaluateRequest = EvaluateRequest()) -> EvaluationRun:
-    """Run the agent N times and evaluate the resulting sessions.
+    """Evaluate either fresh insight runs or a named historical run.
 
-    Cost per call ≈ ``sample_size · 3`` LLM calls — one to generate the insight,
-    two for the judge metrics (FormatCompliance + FactualGrounding). The
-    ToolUseEvaluator and LLMInferenceEvaluator are cost-free local checks.
+    Fresh mode (``agent_run_id`` absent): generates ``sample_size`` insight
+    runs and scores them. Cost ≈ ``sample_size · 3`` LLM calls (1 to generate,
+    2 for the FormatCompliance + FactualGrounding judge metrics).
+
+    Historical mode (``agent_run_id`` set): fetches the named session from
+    Conductr and scores it. Cost ≈ 2 LLM calls (judge only). Requires
+    ``CONDUCTR_PROJECT_PAT`` and ``CONDUCTR_PROJECT_ID`` on the agent.
+
+    ``ToolUseEvaluator`` and ``LLMInferenceEvaluator`` are free local checks in
+    either mode.
     """
-    if req.agent_run_id is not None:
-        logger.info(
-            "agent_run_id=%s provided but not yet wired — generating fresh runs",
-            req.agent_run_id,
-        )
-    return await EvaluationService().run(sample_size=req.sample_size)
+    return await EvaluationService().run(
+        sample_size=req.sample_size,
+        agent_run_id=req.agent_run_id,
+    )

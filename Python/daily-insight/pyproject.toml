@@ -20,7 +20,7 @@ dependencies = [
     # fails when pointed at the root. The actual package lives at
     # packages/railtracks/ with its own pyproject.toml + src/ layout.
     "railtracks[visual] @ git+https://github.com/RailtownAI/railtracks.git@4e4ed572d76f946908bb3fd441443be8903ae8de#subdirectory=packages/railtracks",
-    "railtownai>=2.0.13",
+    "railtownai>=2.0.14",
     "pydantic>=2.0",
     "python-dotenv>=1.0.0",
     "fastapi>=0.110.0",
