@@ -145,7 +145,11 @@ class EvaluationService:
                 len(session_files),
             )
 
-            evaluation_name = f"daily-insight-{started_at.strftime('%Y%m%dT%H%M%SZ')}"
+            timestamp = started_at.strftime("%Y%m%dT%H%M%SZ")
+            if agent_run_id is not None:
+                evaluation_name = f"daily-insight-{agent_run_id}-{timestamp}"
+            else:
+                evaluation_name = f"daily-insight-{timestamp}"
 
             # agent_selection=False + agents=[...] keeps evaluate() headless.
             # No payload_callback: the SDK's sync upload helper calls
