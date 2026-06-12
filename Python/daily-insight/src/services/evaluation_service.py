@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import os
@@ -25,27 +26,39 @@ _AGENT_NAME = "Daily Insight Agent"
 _MAX_SAMPLE_SIZE = 5
 
 
-def _upload_evaluation(payload: dict[str, Any]) -> None:
-    """Callback handed to evals.evaluate — uploads each EvaluationResult to Conductr.
+async def _upload_evaluations(results: list[Any]) -> None:
+    """Upload completed EvaluationResults to Conductr after evals.evaluate finishes.
 
     Skips silently when EVALUATIONS_API_TOKEN is unset (local dev without the
-    upload token). Otherwise logs success, the SDK's silent-False generic-error
-    path, or any raised exception (EvaluationsNotInitializedError /
+    upload token). Logs success, the SDK's silent-False generic-error path, or
+    any raised exception (EvaluationsNotInitializedError /
     EvaluationsValidationError).
 
-    Why explicit-False logging: railtownai.upload_agent_evaluation catches all
-    non-config exceptions and returns False without raising or logging. Without
-    surfacing that path explicitly, HTTP-layer failures (auth rejection by
-    Conductr, ingestion endpoint unreachable, rail-engine-ingest errors) look
-    indistinguishable from success — the previous wrapper logged
-    "uploaded to Conductr" on every call regardless of outcome.
+    Why this is async + offloaded to a worker thread instead of using
+    evals.evaluate's payload_callback hook:
+
+    railtownai.upload_agent_evaluation is a *sync* function that drives its
+    async implementation via asyncio.run(). asyncio.run() raises RuntimeError
+    when invoked from within an already-running event loop — exactly what
+    happens when FastAPI calls into this service. The SDK catches that as a
+    generic Exception and returns False, leaving an unawaited coroutine
+    warning in stderr. asyncio.to_thread runs the call in a worker thread
+    with clean thread-local state where asyncio.run() works as designed.
     """
     if not os.environ.get("EVALUATIONS_API_TOKEN", "").strip():
         return
+    if not results:
+        return
+
+    payloads = [r.model_dump(mode="json") for r in results]
     try:
-        success = railtownai.upload_agent_evaluation(payload)
+        success = await asyncio.to_thread(
+            railtownai.upload_agent_evaluation, payloads
+        )
         if success:
-            logger.info("Evaluation result uploaded to Conductr")
+            logger.info(
+                "Uploaded %s evaluation result(s) to Conductr", len(payloads)
+            )
         else:
             logger.error(
                 "railtownai.upload_agent_evaluation returned False — upload "
@@ -135,15 +148,19 @@ class EvaluationService:
             evaluation_name = f"daily-insight-{started_at.strftime('%Y%m%dT%H%M%SZ')}"
 
             # agent_selection=False + agents=[...] keeps evaluate() headless.
-            # payload_callback fires once per EvaluationResult as it completes.
+            # No payload_callback: the SDK's sync upload helper calls
+            # asyncio.run() under the hood which fails from inside FastAPI's
+            # running event loop. Upload via asyncio.to_thread after evaluate
+            # returns instead — see _upload_evaluations.
             evaluation_results = evals.evaluate(
                 data=data,
                 evaluators=build_evaluators(),
                 agents=[_AGENT_NAME],
                 agent_selection=False,
                 name=evaluation_name,
-                payload_callback=_upload_evaluation,
             )
+
+        await _upload_evaluations(evaluation_results)
 
         completed_at = datetime.now(timezone.utc)
         return EvaluationRun(
