@@ -17,6 +17,7 @@ public class DailyInsightService : BackgroundService
     private readonly string mcpServerBaseUrl;
     private readonly string mcpServerName;
     private readonly string agentUrl;
+    private readonly string agentBearerToken;
 
     private static readonly TimeSpan Interval = TimeSpan.FromHours(24);
     private static readonly TimeSpan RequestTimeout = TimeSpan.FromMinutes(10);
@@ -49,6 +50,7 @@ public class DailyInsightService : BackgroundService
         mcpServerBaseUrl = configuration["RailEngine:McpServerBaseUrl"]!.TrimEnd('/');
         mcpServerName = configuration["RailEngine:McpServerName"]!;
         agentUrl = (configuration["DailyInsight:AgentUrl"] ?? "").TrimEnd('/');
+        agentBearerToken = configuration["DailyInsight:AgentBearerToken"] ?? "";
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -97,6 +99,10 @@ public class DailyInsightService : BackgroundService
 
         using var request = new HttpRequestMessage(HttpMethod.Post, $"{agentUrl}/insight");
         request.Content = new StringContent("{}", Encoding.UTF8, "application/json");
+        if (!string.IsNullOrEmpty(agentBearerToken))
+        {
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", agentBearerToken);
+        }
 
         using var response = await client.SendAsync(request, cts.Token);
 

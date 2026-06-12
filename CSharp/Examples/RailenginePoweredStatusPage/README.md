@@ -104,6 +104,8 @@ Set `DailyInsight:AgentUrl` to the base URL of a service that exposes `POST /ins
 
 When `AgentUrl` is set, `DailyInsightService` POSTs to `{AgentUrl}/insight` every 24 hours instead of calling Anthropic + MCP inline. `Anthropic:ApiKey` is then optional — the agent owns the LLM call. Leave `AgentUrl` empty (or unset) to keep the inline path.
 
+If the agent endpoint requires bearer authentication, set `DailyInsight:AgentBearerToken` to the token — `DailyInsightService` attaches it as `Authorization: Bearer <token>` on every POST. Leave it blank for an unauthenticated endpoint (e.g. local development on `:8000`).
+
 > **Heads-up for local development:** the 24-hour timer is in-memory only, so each app restart triggers a fresh generation and a corresponding Anthropic API call. If you're iterating on the app you may want to comment out `AddHostedService<DailyInsightService>()` in `Program.cs` until you're ready to test it. Once deployed to a long-running host, restarts are rare and this isn't a concern.
 
 ## Configuration
