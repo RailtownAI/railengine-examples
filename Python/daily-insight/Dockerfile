@@ -4,6 +4,9 @@ WORKDIR /app
 
 # git is needed to pip-install railtracks from its pinned commit (see
 # pyproject.toml). Remove once we move back to a PyPI-released version.
+# hadolint ignore=DL3008
+# Pinning git's apt version would force a Dockerfile edit on every base-image
+# refresh; ignore the apt-version-pin rule for this transient dependency.
 RUN apt-get update \
     && apt-get install -y --no-install-recommends git \
     && rm -rf /var/lib/apt/lists/*

@@ -38,11 +38,19 @@ class EvaluateRequest(BaseModel):
         default=1,
         ge=1,
         le=5,
-        description="Number of fresh insight runs to generate and evaluate (capped at 5). Ignored when agent_run_id is provided.",
+        description=(
+            "Number of fresh insight runs to generate and evaluate (capped at 5). "
+            "Ignored when agent_run_id is provided."
+        ),
     )
     agent_run_id: Optional[UUID] = Field(
         default=None,
-        description="Optional. When set, fetches the named historical agent run from Conductr (via railtownai.get_agent_runs) and evaluates that single session instead of generating fresh ones. Requires CONDUCTR_PROJECT_PAT and CONDUCTR_PROJECT_ID on the agent.",
+        description=(
+            "Optional. When set, fetches the named historical agent run from "
+            "Conductr (via railtownai.get_agent_runs) and evaluates that single "
+            "session instead of generating fresh ones. Requires "
+            "CONDUCTR_PROJECT_PAT and CONDUCTR_PROJECT_ID on the agent."
+        ),
     )
 
 

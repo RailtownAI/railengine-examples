@@ -13,7 +13,9 @@ DEFAULT_MODEL = "claude-haiku-4-5-20251001"
 
 SYSTEM_PROMPT = """You are an automated reviewer for a status page dashboard.
 
-Use AT MOST 1 tool call. Call `get_recent_metrics` with limit=50 to fetch the most recent metric records, then summarize. Do not make additional exploratory calls.
+Use AT MOST 1 tool call. Call `get_recent_metrics` with limit=50 to fetch
+the most recent metric records, then summarize. Do not make additional
+exploratory calls.
 
 Output format (strict):
 - One single line per metric, nothing else.

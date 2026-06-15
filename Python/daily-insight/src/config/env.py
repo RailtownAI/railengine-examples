@@ -47,6 +47,8 @@ def validate_required_env() -> None:
     Run ``configure_runtime_env`` first so the LLM_API_KEY alias has a chance
     to populate ANTHROPIC_API_KEY before this check.
     """
-    missing = [name for name in REQUIRED_ENV_VARS if not os.environ.get(name, "").strip()]
+    missing = [
+        name for name in REQUIRED_ENV_VARS if not os.environ.get(name, "").strip()
+    ]
     if missing:
         raise MissingEnvVarsError(missing)

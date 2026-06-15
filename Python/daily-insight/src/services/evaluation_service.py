@@ -52,13 +52,9 @@ async def _upload_evaluations(results: list[Any]) -> None:
 
     payloads = [r.model_dump(mode="json") for r in results]
     try:
-        success = await asyncio.to_thread(
-            railtownai.upload_agent_evaluation, payloads
-        )
+        success = await asyncio.to_thread(railtownai.upload_agent_evaluation, payloads)
         if success:
-            logger.info(
-                "Uploaded %s evaluation result(s) to Conductr", len(payloads)
-            )
+            logger.info("Uploaded %s evaluation result(s) to Conductr", len(payloads))
         else:
             logger.error(
                 "railtownai.upload_agent_evaluation returned False — upload "
