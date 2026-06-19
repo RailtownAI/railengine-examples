@@ -19,7 +19,6 @@ from daily_insight.agents.evaluations import build_evaluators
 from daily_insight.models import DailyInsight, EvaluationRun
 from daily_insight.services.insight_service import InsightService
 
-
 logger = logging.getLogger(__name__)
 
 _AGENT_NAME = "Daily Insight Agent"
@@ -152,9 +151,7 @@ class EvaluationService:
                 # Keep the name human-readable when there's only one run; for a
                 # batch, just embed the count so the name stays bounded.
                 if len(agent_run_ids) == 1:
-                    evaluation_name = (
-                        f"daily-insight-{agent_run_ids[0]}-{timestamp}"
-                    )
+                    evaluation_name = f"daily-insight-{agent_run_ids[0]}-{timestamp}"
                 else:
                     evaluation_name = (
                         f"daily-insight-batch{len(agent_run_ids)}-{timestamp}"

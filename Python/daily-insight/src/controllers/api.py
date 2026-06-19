@@ -21,7 +21,7 @@ import railtownai
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from daily_insight.config import (
     MissingEnvVarsError,
@@ -34,25 +34,49 @@ from daily_insight.services import EvaluationService, InsightService
 
 
 class EvaluateRequest(BaseModel):
+    # extra="forbid" rejects typo'd keys at 422 instead of silently dropping
+    # them — the old singular agent_run_id would otherwise slip through and
+    # quietly trigger a Fresh-mode generation run.
+    model_config = ConfigDict(extra="forbid")
+
     sample_size: int = Field(
         default=1,
         ge=1,
         le=5,
         description=(
-            "Number of fresh insight runs to generate and evaluate (capped at 5). "
-            "Ignored when agent_run_ids is provided."
+            "Fresh-mode only. Number of fresh insight runs to generate and "
+            "evaluate (capped at 5). Mutually exclusive with agent_run_ids."
         ),
     )
     agent_run_ids: Optional[list[UUID]] = Field(
         default=None,
+        min_length=1,
+        max_length=10,
         description=(
-            "Optional. When set, fetches the named historical agent runs from "
-            "Conductr (via railtownai.get_agent_runs) and evaluates those "
-            "sessions as a single batch instead of generating fresh ones. "
-            "Requires CONDUCTR_PROJECT_PAT and CONDUCTR_PROJECT_ID on the "
-            "agent."
+            "Historical-mode only. When set, fetches the named historical "
+            "agent runs from Conductr (via railtownai.get_agent_runs) and "
+            "evaluates those sessions as a single batch instead of generating "
+            "fresh ones. Mutually exclusive with sample_size. Requires "
+            "CONDUCTR_PROJECT_PAT and CONDUCTR_PROJECT_ID on the agent."
         ),
     )
+
+    @model_validator(mode="after")
+    def _enforce_mode_xor(self) -> "EvaluateRequest":
+        """Reject bodies that try to drive both modes at once.
+
+        Uses model_fields_set so the default sample_size=1 doesn't count as
+        "set" — a caller passing only agent_run_ids still validates cleanly.
+        """
+        if (
+            "sample_size" in self.model_fields_set
+            and "agent_run_ids" in self.model_fields_set
+        ):
+            raise ValueError(
+                "sample_size and agent_run_ids are mutually exclusive — "
+                "omit sample_size when targeting historical runs."
+            )
+        return self
 
 
 logger = logging.getLogger(__name__)
