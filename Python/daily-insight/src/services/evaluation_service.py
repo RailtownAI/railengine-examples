@@ -68,21 +68,23 @@ async def _upload_evaluations(results: list[Any]) -> None:
         logger.exception("Evaluation upload raised")
 
 
-def _fetch_historical_session(agent_run_id: UUID) -> dict[str, Any]:
-    """Fetch a session payload from Conductr via railtownai.get_agent_runs.
+def _fetch_historical_sessions(agent_run_ids: list[UUID]) -> list[dict[str, Any]]:
+    """Fetch session payloads from Conductr via railtownai.get_agent_runs.
 
-    Returns the nested session shape (session_id, runs: [...]) that
+    Returns the nested session shapes (session_id, runs: [...]) that
     extract_agent_data_points consumes. Raises whatever the SDK raises —
     AgentRunsNotInitializedError when CONDUCTR_PROJECT_PAT/CONDUCTR_PROJECT_ID
     aren't set, AgentRunFetchError on HTTP/parse failures — and the global
     exception handler shapes those into a 500 JSON body.
     """
-    payloads = railtownai.get_agent_runs([str(agent_run_id)])
-    if not payloads:
+    payloads = railtownai.get_agent_runs([str(rid) for rid in agent_run_ids])
+    if len(payloads) != len(agent_run_ids):
         raise RuntimeError(
-            f"Conductr returned no payload for agent_run_id={agent_run_id}"
+            f"Conductr returned {len(payloads)} payload(s) for "
+            f"{len(agent_run_ids)} requested agent_run_ids "
+            f"({[str(r) for r in agent_run_ids]})"
         )
-    return payloads[0]
+    return payloads
 
 
 class EvaluationService:
@@ -91,25 +93,29 @@ class EvaluationService:
     Two modes:
     - **Fresh** (default) — generate ``sample_size`` insight runs via
       ``InsightService.run_and_capture_session`` and evaluate them.
-    - **Historical** — when ``agent_run_id`` is provided, fetch that specific
-      run from Conductr via ``railtownai.get_agent_runs`` and evaluate only
-      that session. ``sample_size`` is ignored in this mode.
+    - **Historical** — when ``agent_run_ids`` is provided, fetch those runs
+      from Conductr via ``railtownai.get_agent_runs`` and evaluate them as a
+      single batch. ``sample_size`` is ignored in this mode.
     """
 
     async def run(
         self,
         sample_size: int = 1,
-        agent_run_id: UUID | None = None,
+        agent_run_ids: list[UUID] | None = None,
     ) -> EvaluationRun:
         started_at = datetime.now(timezone.utc)
 
-        if agent_run_id is not None:
-            logger.info("Evaluating historical session agent_run_id=%s", agent_run_id)
-            session_payloads: list[dict[str, Any]] = [
-                _fetch_historical_session(agent_run_id)
-            ]
+        if agent_run_ids:
+            logger.info(
+                "Evaluating %s historical session(s): %s",
+                len(agent_run_ids),
+                [str(r) for r in agent_run_ids],
+            )
+            session_payloads: list[dict[str, Any]] = _fetch_historical_sessions(
+                agent_run_ids
+            )
             insights: list[DailyInsight] = []
-            effective_sample_size = 1
+            effective_sample_size = len(agent_run_ids)
         else:
             effective_sample_size = max(1, min(int(sample_size), _MAX_SAMPLE_SIZE))
             insight_service = InsightService()
@@ -142,8 +148,17 @@ class EvaluationService:
             )
 
             timestamp = started_at.strftime("%Y%m%dT%H%M%SZ")
-            if agent_run_id is not None:
-                evaluation_name = f"daily-insight-{agent_run_id}-{timestamp}"
+            if agent_run_ids:
+                # Keep the name human-readable when there's only one run; for a
+                # batch, just embed the count so the name stays bounded.
+                if len(agent_run_ids) == 1:
+                    evaluation_name = (
+                        f"daily-insight-{agent_run_ids[0]}-{timestamp}"
+                    )
+                else:
+                    evaluation_name = (
+                        f"daily-insight-batch{len(agent_run_ids)}-{timestamp}"
+                    )
             else:
                 evaluation_name = f"daily-insight-{timestamp}"
 

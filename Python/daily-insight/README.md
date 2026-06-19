@@ -50,16 +50,16 @@ Expect each call to take a few seconds — the agent makes one Anthropic call pl
 
 | Mode | Trigger | Cost | What it evaluates |
 |---|---|---|---|
-| **Fresh** (default) | body omits `agent_run_id` | ≈ `sample_size · 3` LLM calls | Generates `sample_size` brand-new `/insight` runs (default 1, capped at 5) and scores them. Self-contained smoke test. |
-| **Historical** | body sets `agent_run_id` | ≈ 2 LLM calls (judge only) | Fetches the named past run from Conductr via [`railtownai.get_agent_runs`](https://pypi.org/project/railtownai/) and scores that single session. Replays a real production interaction without re-spending generation cost. |
+| **Fresh** (default) | body omits `agent_run_ids` | ≈ `sample_size · 3` LLM calls | Generates `sample_size` brand-new `/insight` runs (default 1, capped at 5) and scores them. Self-contained smoke test. |
+| **Historical** | body sets `agent_run_ids` | ≈ `N · 2` LLM calls (judge only) | Fetches the named past runs from Conductr via [`railtownai.get_agent_runs`](https://pypi.org/project/railtownai/) and scores them as one batch. Replays real production interactions without re-spending generation cost. |
 
 ```bash
 # Fresh (default)
 curl -X POST .../evals/run -H 'Content-Type: application/json' -d '{"sample_size": 1}'
 
-# Historical
+# Historical (one or more runs)
 curl -X POST .../evals/run -H 'Content-Type: application/json' \
-  -d '{"agent_run_id": "0466964a-1234-5678-9abc-def012345678"}'
+  -d '{"agent_run_ids": ["0466964a-1234-5678-9abc-def012345678"]}'
 ```
 
 When `RAILTOWN_API_KEY` is set, each `EvaluationResult` also uploads to Conductr via `railtownai.upload_agent_evaluation`.

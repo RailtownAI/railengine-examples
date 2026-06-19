@@ -40,16 +40,17 @@ class EvaluateRequest(BaseModel):
         le=5,
         description=(
             "Number of fresh insight runs to generate and evaluate (capped at 5). "
-            "Ignored when agent_run_id is provided."
+            "Ignored when agent_run_ids is provided."
         ),
     )
-    agent_run_id: Optional[UUID] = Field(
+    agent_run_ids: Optional[list[UUID]] = Field(
         default=None,
         description=(
-            "Optional. When set, fetches the named historical agent run from "
-            "Conductr (via railtownai.get_agent_runs) and evaluates that single "
-            "session instead of generating fresh ones. Requires "
-            "CONDUCTR_PROJECT_PAT and CONDUCTR_PROJECT_ID on the agent."
+            "Optional. When set, fetches the named historical agent runs from "
+            "Conductr (via railtownai.get_agent_runs) and evaluates those "
+            "sessions as a single batch instead of generating fresh ones. "
+            "Requires CONDUCTR_PROJECT_PAT and CONDUCTR_PROJECT_ID on the "
+            "agent."
         ),
     )
 
@@ -122,20 +123,21 @@ async def generate_insight() -> DailyInsight:
 
 @app.post("/evals/run", response_model=EvaluationRun)
 async def run_evaluation(req: EvaluateRequest = EvaluateRequest()) -> EvaluationRun:
-    """Evaluate either fresh insight runs or a named historical run.
+    """Evaluate either fresh insight runs or one or more named historical runs.
 
-    Fresh mode (``agent_run_id`` absent): generates ``sample_size`` insight
+    Fresh mode (``agent_run_ids`` absent): generates ``sample_size`` insight
     runs and scores them. Cost ≈ ``sample_size · 3`` LLM calls (1 to generate,
     2 for the FormatCompliance + FactualGrounding judge metrics).
 
-    Historical mode (``agent_run_id`` set): fetches the named session from
-    Conductr and scores it. Cost ≈ 2 LLM calls (judge only). Requires
-    ``CONDUCTR_PROJECT_PAT`` and ``CONDUCTR_PROJECT_ID`` on the agent.
+    Historical mode (``agent_run_ids`` set): fetches the named sessions from
+    Conductr and scores them as a single batch. Cost ≈ ``N · 2`` LLM calls
+    (judge only). Requires ``CONDUCTR_PROJECT_PAT`` and ``CONDUCTR_PROJECT_ID``
+    on the agent.
 
     ``ToolUseEvaluator`` and ``LLMInferenceEvaluator`` are free local checks in
     either mode.
     """
     return await EvaluationService().run(
         sample_size=req.sample_size,
-        agent_run_id=req.agent_run_id,
+        agent_run_ids=req.agent_run_ids,
     )
