@@ -16,6 +16,8 @@ public class DailyInsightService : BackgroundService
     private readonly string pat;
     private readonly string mcpServerBaseUrl;
     private readonly string mcpServerName;
+    private readonly string agentUrl;
+    private readonly string agentBearerToken;
 
     private static readonly TimeSpan Interval = TimeSpan.FromHours(24);
     private static readonly TimeSpan RequestTimeout = TimeSpan.FromMinutes(10);
@@ -47,13 +49,16 @@ public class DailyInsightService : BackgroundService
         pat = configuration["RailEngine:PAT"]!;
         mcpServerBaseUrl = configuration["RailEngine:McpServerBaseUrl"]!.TrimEnd('/');
         mcpServerName = configuration["RailEngine:McpServerName"]!;
+        agentUrl = (configuration["DailyInsight:AgentUrl"] ?? "").TrimEnd('/');
+        agentBearerToken = configuration["DailyInsight:AgentBearerToken"] ?? "";
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        if (string.IsNullOrEmpty(apiKey))
+        var useAgent = !string.IsNullOrEmpty(agentUrl);
+        if (!useAgent && string.IsNullOrEmpty(apiKey))
         {
-            logger.LogInformation("Anthropic:ApiKey not configured; daily insight disabled.");
+            logger.LogInformation("Neither DailyInsight:AgentUrl nor Anthropic:ApiKey configured; daily insight disabled.");
             return;
         }
 
@@ -61,7 +66,14 @@ public class DailyInsightService : BackgroundService
         {
             try
             {
-                await GenerateAsync(stoppingToken);
+                if (useAgent)
+                {
+                    await GenerateFromAgentAsync(stoppingToken);
+                }
+                else
+                {
+                    await GenerateAsync(stoppingToken);
+                }
                 state.Error = null;
             }
             catch (Exception ex)
@@ -73,6 +85,52 @@ public class DailyInsightService : BackgroundService
             try { await Task.Delay(Interval, stoppingToken); }
             catch (TaskCanceledException) { return; }
         }
+    }
+
+    private async Task GenerateFromAgentAsync(CancellationToken ct)
+    {
+        logger.LogInformation("Starting daily insight generation via agent at {Url}…", agentUrl);
+
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        cts.CancelAfter(RequestTimeout);
+
+        using var client = httpClientFactory.CreateClient();
+        client.Timeout = Timeout.InfiniteTimeSpan;
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, $"{agentUrl}/insight");
+        request.Content = new StringContent("{}", Encoding.UTF8, "application/json");
+        if (!string.IsNullOrEmpty(agentBearerToken))
+        {
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", agentBearerToken);
+        }
+
+        using var response = await client.SendAsync(request, cts.Token);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errBody = await response.Content.ReadAsStringAsync(cts.Token);
+            throw new InvalidOperationException($"Agent returned {(int)response.StatusCode}: {errBody}");
+        }
+
+        var body = await response.Content.ReadAsStringAsync(cts.Token);
+        using var doc = JsonDocument.Parse(body);
+        var root = doc.RootElement;
+
+        var text = root.TryGetProperty("text", out var t) ? t.GetString() ?? "" : "";
+        var generatedAt = root.TryGetProperty("generated_at", out var ga) && ga.ValueKind == JsonValueKind.String
+            ? DateTimeOffset.Parse(ga.GetString()!)
+            : DateTimeOffset.UtcNow;
+        var agentError = root.TryGetProperty("error", out var err) && err.ValueKind == JsonValueKind.String
+            ? err.GetString()
+            : null;
+
+        state.Text = text;
+        state.GeneratedAt = generatedAt;
+        if (!string.IsNullOrEmpty(agentError))
+        {
+            state.Error = agentError;
+        }
+        logger.LogInformation("Daily insight generated via agent ({Length} chars)", text.Length);
     }
 
     private async Task GenerateAsync(CancellationToken ct)
